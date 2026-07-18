@@ -2,6 +2,9 @@
   "use strict";
 
   const jobs = window.WORK_JOBS || [];
+  const mapJobs = jobs.filter((job) => job.mapPrecision === "city"
+    && Number.isFinite(job.lat)
+    && Number.isFinite(job.lng));
   const categories = window.WORK_CATEGORIES || {};
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
@@ -25,7 +28,8 @@
           job.mapLng = job.lng;
           return;
         }
-        const radius = Math.min(6, 0.14 + Math.sqrt(index) * 0.3);
+        // 同城岗位只在都会区范围内轻微错开，避免视觉重叠但不伪造另一座城市。
+        const radius = Math.min(0.42, 0.035 + Math.sqrt(index) * 0.042);
         const angle = index * 2.399963;
         const longitudeScale = Math.max(0.4, Math.cos(job.lat * Math.PI / 180));
         job.mapLat = job.lat + Math.sin(angle) * radius;
@@ -34,7 +38,7 @@
     });
   }
 
-  spreadSharedLocations(jobs);
+  spreadSharedLocations(mapJobs);
 
   const state = {
     globe: null,
@@ -114,7 +118,7 @@
     const query = normalize(state.query);
     if (!query) return true;
     const haystack = normalize([
-      job.title, job.company, job.category, job.location, job.summary, ...(job.tags || [])
+      job.title, job.company, job.category, job.location, job.mapCity, job.summary, ...(job.tags || [])
     ].join(" "));
     const synonymMatch = (token) => {
       if (["设计师", "设计", "ui", "ux"].includes(token)) return job.category === "设计" || haystack.includes(token);
@@ -157,7 +161,8 @@
 
   function tooltip(job) {
     if (!job) return "";
-    return `<div class="map-tooltip" style="--tooltip-color:${colorFor(job)}"><span>${escapeHtml(job.category)}</span><b>${escapeHtml(job.title)}</b><small>${escapeHtml(job.location)}</small></div>`;
+    const pointKind = job.mapBasis === "company-hq" ? "公司总部" : "职位城市";
+    return `<div class="map-tooltip" style="--tooltip-color:${colorFor(job)}"><span>${escapeHtml(job.category)} · ${pointKind}</span><b>${escapeHtml(job.title)}</b><small>${escapeHtml(job.mapCity)}</small></div>`;
   }
 
   function renderOptions() {
@@ -227,7 +232,7 @@
       .pointRadius(pointRadius)
       .pointColor(pointColor)
       .pointAltitude(pointAltitude)
-      .pointsData([...jobs]);
+      .pointsData([...mapJobs]);
   }
 
   function updateSearchState(shouldOpen) {
@@ -290,12 +295,15 @@
   function selectJob(job) {
     state.selected = job;
     renderCard(job);
-    pauseRotation();
-    if (state.globe) {
+    const hasCityPoint = job.mapPrecision === "city" && Number.isFinite(job.mapLat) && Number.isFinite(job.mapLng);
+    if (hasCityPoint) pauseRotation();
+    if (state.globe && hasCityPoint) {
       state.globe
         .ringsData([job])
         .ringColor(() => [hexToRgba(colorFor(job), 0.88), hexToRgba(colorFor(job), 0)])
         .pointOfView({ lat: job.mapLat, lng: job.mapLng, altitude: viewLayout("explore").altitude }, reducedMotion ? 0 : 900);
+    } else {
+      state.globe?.ringsData([]);
     }
     syncUrl();
   }
@@ -512,7 +520,7 @@
         .polygonSideColor(() => "rgba(168, 182, 179, 0.22)")
         .polygonStrokeColor(() => "rgba(255,255,255,0.74)")
         .polygonsTransitionDuration(reducedMotion ? 0 : 520)
-        .pointsData(jobs)
+        .pointsData(mapJobs)
         .pointLat("mapLat")
         .pointLng("mapLng")
         .pointAltitude(pointAltitude)

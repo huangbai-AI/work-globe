@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="在一颗持续存在的地球上，发现最近 30 天世界各地的工作机会。" />
+    <meta name="description" content="在一颗持续存在的地球上，发现最近 30 天来自真实城市与远程团队的工作机会。" />
     <meta name="theme-color" content="#f0f0ec" />
     <title>工作候鸟｜世界各地正在招什么</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='18' fill='%23eef0ed' stroke='%231b2529'/%3E%3Cpath d='M13 27c7-1 11-5 15-12 1 6 3 9 8 12-6-1-10 1-13 7-1-5-4-7-10-7Z' fill='%23647cf1'/%3E%3C/svg%3E" />
@@ -14,6 +14,7 @@
     <script defer src="data.js"></script>
     <script defer src="data-month.js"></script>
     <script defer src="data-remote.js"></script>
+    <script defer src="data-locations.js"></script>
     <script defer src="explore.js"></script>
   </head>
   <body class="app-page is-landing">
@@ -35,9 +36,9 @@
       </header>
 
       <section class="landing-copy landing-reveal" aria-labelledby="landing-title">
-        <p class="landing-kicker">全球工作地图</p>
-        <h1 id="landing-title">世界很大，<br />工作正在某处发生。</h1>
-        <p class="landing-lead">把散落在公开帖子里的招聘信号，放回它们发生的地方。</p>
+        <p class="landing-kicker">全球远程工作地图</p>
+        <h1 id="landing-title">工作在远方，<br />你不必远行。</h1>
+        <p class="landing-lead">寻找最近 30 天，来自真实城市与远程团队的工作机会。</p>
         <button class="primary-entry" id="start-explore" type="button">
           <span>开始查看</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M14 7l5 5-5 5" /></svg>
@@ -46,7 +47,7 @@
 
       <section class="earth-stage shared-earth" id="earth-stage" aria-label="全球工作地图">
         <div id="work-globe" aria-hidden="true"></div>
-        <div class="landing-orbit-note landing-reveal" aria-hidden="true"><span></span> 每个微光，是一份正在发生的工作</div>
+        <div class="landing-orbit-note landing-reveal" aria-hidden="true"><span></span> 每个城市点，都有明确的位置依据</div>
         <div class="globe-empty" id="globe-empty" hidden>
           <p>地球暂时没有载入，但仍可在下方搜索岗位。</p>
         </div>
