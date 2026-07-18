@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>正在进入工作地图</title>
+    <script>
+      const query = new URLSearchParams(window.location.search);
+      query.set("view", "explore");
+      window.location.replace(`index.html?${query.toString()}`);
+    </script>
+  </head>
+  <body></body>
+</html>
