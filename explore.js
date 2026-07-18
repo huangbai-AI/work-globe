@@ -447,7 +447,7 @@
     els.body.classList.toggle("is-landing", view === "landing");
     els.body.classList.toggle("is-explore", view === "explore");
     els.body.classList.toggle("is-transitioning", duration > 0);
-    document.title = view === "explore" ? "寻找工作｜工作候鸟" : "工作候鸟｜世界各地正在招什么";
+    document.title = view === "explore" ? "寻找工作｜Job Everywhere" : "Job Everywhere｜世界各地正在招什么";
 
     if (view === "landing") {
       closeResults();
