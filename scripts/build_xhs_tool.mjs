@@ -12,7 +12,7 @@ const archive = path.join(releases, "openwork-xhs.zip");
 const source = path.join(root, "xhs-tool-src");
 
 const WORLD_DATA_URL = "https://cdn.jsdelivr.net/gh/vasturiano/globe.gl@master/example/datasets/ne_110m_admin_0_countries.geojson";
-const DATA_FILES = ["data.js", "data-month.js", "data-remote.js", "data-locations.js"];
+const DATA_FILES = ["data.js", "data-month.js", "data-remote.js", "data-china.js", "data-locations.js"];
 
 async function loadJobs() {
   const sandbox = { window: {} };
@@ -120,7 +120,7 @@ function makeOfflineHtml(sourceHtml) {
     "    <link rel=\"stylesheet\" href=\"styles.css\" />\n    <link rel=\"stylesheet\" href=\"xhs-overrides.css\" />"
   );
   html = html.replace(
-    /    <script defer src="https:\/\/unpkg\.com\/globe\.gl@[^\n]+\n    <script defer src="data\.js"><\/script>\n    <script defer src="data-month\.js"><\/script>\n    <script defer src="data-remote\.js"><\/script>\n    <script defer src="data-locations\.js"><\/script>/,
+    /    <script src="[^"]*globe\.gl[^"]*"><\/script>\n    <script src="data\.js"><\/script>\n    <script src="data-month\.js"><\/script>\n    <script src="data-remote\.js"><\/script>\n    <script src="data-china\.js"><\/script>\n    <script src="data-locations\.js"><\/script>\n    <script type="module">\n      import \* as THREE from "[^"]*three[^"]*";\n      window\.THREE = THREE;\n      await import\("\.\/explore\.js(?:\?v=[^"]+)?"\);\n    <\/script>/,
     [
       "    <script defer src=\"mode-xhs.js\"></script>",
       "    <script defer src=\"world-data.js\"></script>",
@@ -128,6 +128,9 @@ function makeOfflineHtml(sourceHtml) {
       "    <script defer src=\"jobs-data.js\"></script>"
     ].join("\n")
   );
+  if (html.includes("unpkg.com/globe.gl") || html.includes("unpkg.com/three@") || html.includes("data-china.js")) {
+    throw new Error("离线页面的数据脚本替换失败");
+  }
   html = html.replace(' href="#" target="_blank" rel="noreferrer noopener"', "");
   return html;
 }

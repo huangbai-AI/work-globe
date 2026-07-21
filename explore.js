@@ -12,14 +12,14 @@
   const params = xhsMode ? new URLSearchParams() : new URLSearchParams(window.location.search);
   const initialExplore = params.get("view") === "explore"
     || params.has("q")
-    || params.has("job")
-    || params.has("category");
+    || params.has("job");
   const countryPalette = [
-    "#D7A29B", "#A9BDA9", "#AABBD3", "#D8BD84", "#B8A9C9",
-    "#C69B82", "#8FB7B1", "#C1B9A6", "#9FAFCA", "#C9AAB4"
+    "#E8CCC8", "#CBD7D0", "#C8D3DF", "#E9DBC3", "#D9CFE0",
+    "#E8D1C9", "#C7D8D5", "#DDD5C9", "#CED6E5", "#E3D0D8"
   ];
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
-  const clusterSplitThreshold = 0.6;
+  const countryCapCurvatureResolution = 0.75;
+  const clusterSplitThreshold = 0.4;
   const pinPalette = [
     "#FF8FA3", "#FFAA72", "#FFD45F", "#79D58A", "#5ED1B5",
     "#55C8D8", "#6CAEF5", "#8B91F2", "#B780EA", "#F08CC5"
@@ -74,8 +74,6 @@
   const state = {
     globe: null,
     query: params.get("q") || "",
-    category: params.get("category") || "全部",
-    categoryOpen: false,
     selected: null,
     selectionPool: [],
     selectionType: null,
@@ -113,10 +111,6 @@
     form: $("#search-form"),
     search: $("#job-search"),
     count: $("#search-count"),
-    categoryFilter: $("#category-filter"),
-    categoryCurrent: $("#category-toggle"),
-    categoryToggle: $("#category-toggle"),
-    categoryMenu: $("#category-menu"),
     sheet: $("#result-sheet"),
     resultLabel: $("#result-label"),
     resultList: $("#result-list"),
@@ -152,6 +146,42 @@
     return `rgba(${(value >> 16) & 255},${(value >> 8) & 255},${value & 255},${alpha})`;
   }
 
+  function adjustHexSaturation(hex, multiplier) {
+    const value = Number.parseInt(String(hex).replace("#", ""), 16);
+    const red = ((value >> 16) & 255) / 255;
+    const green = ((value >> 8) & 255) / 255;
+    const blue = (value & 255) / 255;
+    const maximum = Math.max(red, green, blue);
+    const minimum = Math.min(red, green, blue);
+    const lightness = (maximum + minimum) / 2;
+    const delta = maximum - minimum;
+    if (!delta) return hex;
+
+    let hue;
+    if (maximum === red) hue = ((green - blue) / delta) % 6;
+    else if (maximum === green) hue = (blue - red) / delta + 2;
+    else hue = (red - green) / delta + 4;
+    hue = (hue * 60 + 360) % 360;
+
+    const saturation = Math.min(1, (delta / (1 - Math.abs(2 * lightness - 1))) * multiplier);
+    const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+    const section = hue / 60;
+    const secondary = chroma * (1 - Math.abs((section % 2) - 1));
+    let shiftedRed = 0;
+    let shiftedGreen = 0;
+    let shiftedBlue = 0;
+    if (section < 1) [shiftedRed, shiftedGreen] = [chroma, secondary];
+    else if (section < 2) [shiftedRed, shiftedGreen] = [secondary, chroma];
+    else if (section < 3) [shiftedGreen, shiftedBlue] = [chroma, secondary];
+    else if (section < 4) [shiftedGreen, shiftedBlue] = [secondary, chroma];
+    else if (section < 5) [shiftedRed, shiftedBlue] = [secondary, chroma];
+    else [shiftedRed, shiftedBlue] = [chroma, secondary];
+    const match = lightness - chroma / 2;
+    return `#${[shiftedRed, shiftedGreen, shiftedBlue]
+      .map((channel) => Math.round((channel + match) * 255).toString(16).padStart(2, "0"))
+      .join("")}`;
+  }
+
   function colorFor(job) {
     return categories[job.category]?.color || "#647cf1";
   }
@@ -172,7 +202,6 @@
   }
 
   function matches(job) {
-    if (state.category !== "全部" && job.category !== state.category) return false;
     const query = normalize(state.query);
     if (!query) return true;
     const haystack = normalize([
@@ -194,10 +223,6 @@
 
   function activeSearch() {
     return Boolean(state.query.trim());
-  }
-
-  function activeFilter() {
-    return activeSearch() || state.category !== "全部";
   }
 
   function matchingJobs() {
@@ -264,9 +289,9 @@
   function renderResults() {
     const result = matchingJobs();
     const visible = result.slice(0, 8);
-    els.count.textContent = activeFilter() ? `${result.length} 个` : "";
-    els.resultLabel.textContent = activeFilter()
-      ? `${state.category === "全部" ? "全部类型" : state.category} · ${result.length} 个岗位`
+    els.count.textContent = activeSearch() ? `${result.length} 个` : "";
+    els.resultLabel.textContent = activeSearch()
+      ? `找到 ${result.length} 个岗位`
       : "本月值得看看";
     els.resultEmpty.hidden = result.length > 0;
     els.resultList.innerHTML = visible.map((job) => `
@@ -283,41 +308,6 @@
         closeResults();
       });
     });
-  }
-
-  function renderCategoryMenu() {
-    const options = ["全部", ...Object.keys(categories)];
-    els.categoryMenu.innerHTML = options.map((name) => {
-      const selected = state.category === name;
-      const label = name === "全部" ? "全部类型" : name;
-      const color = name === "全部" ? "#171f22" : categories[name].color;
-      return `<button class="category-option${selected ? " is-selected" : ""}" type="button" role="option" aria-selected="${selected}" data-category="${escapeHtml(name)}" style="--category-color:${color}">
-        <i aria-hidden="true"></i><span>${escapeHtml(label)}</span><b aria-hidden="true">✓</b>
-      </button>`;
-    }).join("");
-    const currentLabel = state.category === "全部" ? "全部类型" : state.category;
-    const currentColor = state.category === "全部" ? "#171f22" : categories[state.category]?.color;
-    $("span", els.categoryCurrent).textContent = currentLabel;
-    $("i", els.categoryCurrent).style.background = currentColor || "#171f22";
-    els.categoryToggle.setAttribute("aria-label", `工作类型：${currentLabel}，点击展开`);
-  }
-
-  function setCategoryMenu(open) {
-    state.categoryOpen = open;
-    els.categoryMenu.hidden = !open;
-    els.categoryToggle.setAttribute("aria-expanded", String(open));
-    els.categoryToggle.setAttribute("aria-label", open ? "收起工作类型" : "展开工作类型");
-    els.categoryFilter.classList.toggle("is-open", open);
-  }
-
-  function selectCategory(name) {
-    state.category = name === "全部" || categories[name] ? name : "全部";
-    renderCategoryMenu();
-    setCategoryMenu(false);
-    renderResults();
-    refreshGlobePoints();
-    if (state.selected && !matches(state.selected)) clearSelection(false);
-    syncUrl();
   }
 
   function openResults() {
@@ -337,7 +327,6 @@
     if (state.view === "explore") {
       next.set("view", "explore");
       if (state.query.trim()) next.set("q", state.query.trim());
-      if (state.category !== "全部") next.set("category", state.category);
       if (state.selected) next.set("job", state.selected.id);
     }
     const suffix = next.toString() ? `${window.location.pathname}?${next}` : window.location.pathname;
@@ -438,11 +427,14 @@
 
   function selectJob(job, options = {}) {
     const pool = options.pool?.length ? options.pool : matchingJobs();
+    const previousCountryKey = state.selectedCountryKey;
     state.selected = job;
     state.selectionPool = pool;
     state.selectionType = options.type || "job";
     state.selectionLabel = options.label || "";
     state.selectedCountryKey = options.countryKey || null;
+    if (previousCountryKey !== state.selectedCountryKey) refreshCountryStyles();
+    closeResults();
     renderCard(job);
     const hasCityPoint = job.mapPrecision === "city" && Number.isFinite(job.mapLat) && Number.isFinite(job.mapLng);
     const layout = viewLayout("explore");
@@ -785,7 +777,10 @@
   }
 
   function landColor(feature) {
-    return countryPalette[feature._paletteIndex % countryPalette.length] || countryPalette[0];
+    const color = countryPalette[feature._paletteIndex % countryPalette.length] || countryPalette[0];
+    return feature._countryKey === state.selectedCountryKey
+      ? adjustHexSaturation(color, 3)
+      : color;
   }
 
   function landMaterial(feature) {
@@ -856,7 +851,7 @@
     }
     if (xhsMode) return;
     try {
-      const response = await fetch("node_modules/globe.gl/example/datasets/ne_110m_admin_0_countries.geojson");
+      const response = await fetch("https://cdn.jsdelivr.net/gh/vasturiano/globe.gl@master/example/datasets/ne_110m_admin_0_countries.geojson");
       if (!response.ok) throw new Error(String(response.status));
       const world = await response.json();
       state.globe?.polygonsData(prepareLand(world.features || []));
@@ -867,10 +862,20 @@
     }
   }
 
+  function defaultExploreAltitude() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    if (width <= 920 && height <= 520) return 1.28;
+    return width <= 760 ? 1.42 : 1.22;
+  }
+
   function zoomProgress() {
-    const altitude = state.globe?.pointOfView()?.altitude ?? 1.4;
-    const distance = 100 * (1 + altitude);
-    return Math.max(0, Math.min(1, (320 - distance) / (320 - 108)));
+    const altitude = state.globe?.pointOfView()?.altitude ?? defaultExploreAltitude();
+    const defaultAltitude = defaultExploreAltitude();
+    const maximumZoomAltitude = 0.08;
+    return Math.max(0, Math.min(1,
+      (defaultAltitude - altitude) / (defaultAltitude - maximumZoomAltitude)
+    ));
   }
 
   function markerScale() {
@@ -1181,7 +1186,7 @@
     if (!state.selected) {
       return {
         offset: [0, width <= 760 ? Math.round(height * 0.17) : Math.round(height * 0.07)],
-        altitude: width <= 760 ? 1.42 : 1.22,
+        altitude: defaultExploreAltitude(),
         lng: 20
       };
     }
@@ -1347,6 +1352,7 @@
         .showGraticules(false)
         .polygonsData([])
         .polygonAltitude(countryAltitude)
+        .polygonCapCurvatureResolution(countryCapCurvatureResolution)
         .polygonCapColor(landColor)
         .polygonCapMaterial(landMaterial)
         .polygonSideColor(countrySideColor)
@@ -1432,14 +1438,6 @@
     });
     els.search.addEventListener("input", () => updateSearchState(true));
     els.search.addEventListener("focus", openResults);
-    els.categoryToggle.addEventListener("click", () => setCategoryMenu(!state.categoryOpen));
-    els.categoryMenu.addEventListener("click", (event) => {
-      const option = event.target.closest("[data-category]");
-      if (option) selectCategory(option.dataset.category);
-    });
-    document.addEventListener("pointerdown", (event) => {
-      if (state.categoryOpen && !els.categoryFilter.contains(event.target)) setCategoryMenu(false);
-    });
     els.form.addEventListener("submit", (event) => {
       event.preventDefault();
       const top = matchingJobs()[0];
@@ -1473,13 +1471,11 @@
     if (!xhsMode) {
       window.addEventListener("popstate", () => {
         const next = new URLSearchParams(window.location.search);
-        const nextView = next.get("view") === "explore" || next.has("q") || next.has("job") || next.has("category")
+        const nextView = next.get("view") === "explore" || next.has("q") || next.has("job")
           ? "explore"
           : "landing";
         state.query = next.get("q") || "";
-        state.category = next.get("category") || "全部";
         els.search.value = state.query;
-        renderCategoryMenu();
         renderResults();
         refreshGlobePoints();
         if (nextView !== state.view) setView(nextView);
@@ -1487,8 +1483,7 @@
     }
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        if (state.categoryOpen) setCategoryMenu(false);
-        else if (state.resultsOpen) closeResults();
+        if (state.resultsOpen) closeResults();
         else if (state.selected) clearSelection();
         else if (state.view === "explore") exitExplore("push");
       } else if (state.view === "explore" && state.selected && !state.resultsOpen && document.activeElement !== els.search) {
@@ -1499,7 +1494,6 @@
   }
 
   function initialize() {
-    if (state.category !== "全部" && !categories[state.category]) state.category = "全部";
     if (xhsMode) {
       document.body.classList.add("is-xhs-tool");
       const dates = jobs.map((job) => job.postedAt).filter(Boolean).sort();
@@ -1512,7 +1506,6 @@
       if (footer) footer.innerHTML = "<span>本地岗位数据</span><span class=\"footer-dot\"></span><span>无需联网 · 定期更新</span>";
     }
     setView(state.view, { instant: true, force: true });
-    renderCategoryMenu();
     renderResults();
     bindEvents();
     initializeGlobe();
