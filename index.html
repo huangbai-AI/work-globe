@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content="在一颗持续存在的地球上，发现最近 30 天来自真实城市与远程团队的工作机会。" />
     <meta name="theme-color" content="#f0f0ec" />
-    <title>Job Everywhere｜世界各地正在招什么</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='18' fill='%23eef0ed' stroke='%231b2529'/%3E%3Cpath d='M13 27c7-1 11-5 15-12 1 6 3 9 8 12-6-1-10 1-13 7-1-5-4-7-10-7Z' fill='%23647cf1'/%3E%3C/svg%3E" />
+    <title>OpenWork｜世界各地正在招什么</title>
+    <link rel="icon" href="openwork-mark.png" type="image/png" />
     <link rel="preconnect" href="https://unpkg.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="styles.css" />
@@ -23,8 +23,8 @@
     <main class="app-shell">
       <header class="app-header">
         <a class="wordmark" id="home-link" href="index.html" aria-label="返回首页">
-          <span class="wordmark-mark" aria-hidden="true"><i></i></span>
-          <span>Job Everywhere</span>
+          <span class="wordmark-mark" aria-hidden="true"><img src="openwork-mark.png" alt="" /></span>
+          <span>OpenWork</span>
         </a>
         <div class="header-status" aria-live="polite">
           <span class="quiet-window landing-reveal">过去 30 天</span>
@@ -67,8 +67,8 @@
         <button class="job-card-close" id="job-card-close" type="button" aria-label="关闭岗位详情">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
         </button>
+        <span class="job-card-source">来源 · <b id="card-source">X</b></span>
         <div class="job-card-topline">
-          <span class="source-pill" id="card-source">X</span>
           <span id="card-posted"></span>
           <span class="evidence-pill" id="card-evidence"></span>
           <span class="card-position" id="card-position"></span>
@@ -81,10 +81,16 @@
         </div>
         <p class="job-card-summary" id="card-summary"></p>
         <div class="job-card-tags" id="card-tags"></div>
-        <a class="job-card-link" id="card-link" href="#" target="_blank" rel="noreferrer noopener">
-          <span>查看原帖</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
-        </a>
+        <div class="job-card-actions">
+          <a class="job-action job-action-primary" id="card-apply" href="#" target="_blank" rel="noreferrer noopener">
+            <span>立即投递</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M14 7l5 5-5 5" /></svg>
+          </a>
+          <button class="job-action job-action-secondary" id="card-details" type="button" aria-expanded="false">
+            <span>查看详情</span>
+          </button>
+        </div>
+        <p class="job-action-feedback" id="card-action-feedback" role="status" hidden></p>
       </aside>
 
       <section class="search-zone explore-reveal" aria-label="搜索工作">
@@ -100,10 +106,9 @@
         <form class="search-dock" id="search-form" role="search">
           <label class="search-input-wrap" for="job-search">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="m16 16 4 4" /></svg>
-            <input id="job-search" type="search" autocomplete="off" placeholder="搜索工作或城市" aria-controls="result-sheet" />
+            <input id="job-search" type="search" autocomplete="off" placeholder="搜索职位、公司或城市" aria-controls="result-sheet" />
             <span class="search-count" id="search-count" aria-live="polite"></span>
           </label>
-          <div class="role-options" id="role-options" aria-label="岗位类型"></div>
         </form>
       </section>
 

@@ -1,0 +1,50 @@
+.local-globe-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+
+.local-globe-canvas:active { cursor: grabbing; }
+
+.local-globe-tooltip {
+  position: absolute;
+  z-index: 8;
+  width: min(320px, calc(100vw - 32px));
+  pointer-events: none;
+  transform: translate(14px, calc(-100% - 14px));
+}
+
+.local-globe-tooltip.is-left {
+  transform: translate(calc(-100% - 14px), calc(-100% - 14px));
+}
+
+.local-globe-tooltip.is-below {
+  transform: translate(14px, 14px);
+}
+
+.local-globe-tooltip.is-left.is-below {
+  transform: translate(calc(-100% - 14px), 14px);
+}
+
+.is-xhs-tool .job-action-primary.is-offline { cursor: pointer; }
+
+.is-xhs-tool .source-window .live-dot {
+  background: #647cf1;
+  box-shadow: 0 0 0 5px rgba(100, 124, 241, 0.09);
+}
+
+@media (max-width: 760px) {
+  .is-xhs-tool .app-header {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .is-xhs-tool .landing-footer {
+    bottom: max(18px, env(safe-area-inset-bottom));
+  }
+
+  .is-xhs-tool .search-zone {
+    bottom: max(14px, env(safe-area-inset-bottom));
+  }
+}
