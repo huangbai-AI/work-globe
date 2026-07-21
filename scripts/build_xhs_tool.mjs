@@ -11,7 +11,7 @@ const releases = path.join(root, "releases");
 const archive = path.join(releases, "openwork-xhs.zip");
 const source = path.join(root, "xhs-tool-src");
 
-const WORLD_DATA_URL = "https://cdn.jsdelivr.net/gh/vasturiano/globe.gl@master/example/datasets/ne_110m_admin_0_countries.geojson";
+const WORLD_DATA_FILE = path.join(source, "world-data.js");
 const DATA_FILES = ["data.js", "data-month.js", "data-remote.js", "data-china.js", "data-locations.js"];
 
 async function loadJobs() {
@@ -67,13 +67,16 @@ function makeJobsScript(windowData) {
 }
 
 async function loadWorldFeatures() {
-  const response = await fetch(WORLD_DATA_URL);
-  if (!response.ok) throw new Error(`世界边界下载失败：${response.status}`);
-  const payload = await response.json();
-  if (!Array.isArray(payload.features) || !payload.features.length) {
+  const sandbox = { window: {} };
+  vm.createContext(sandbox);
+  vm.runInContext(await fs.readFile(WORLD_DATA_FILE, "utf8"), sandbox, {
+    filename: WORLD_DATA_FILE
+  });
+  const features = sandbox.window.WORLD_COUNTRIES;
+  if (!Array.isArray(features) || !features.length) {
     throw new Error("世界边界数据为空");
   }
-  return payload.features;
+  return features;
 }
 
 function makeOfflineApp(sourceCode) {
@@ -95,14 +98,20 @@ function makeOfflineApp(sourceCode) {
     ].join("\n")
   );
   code = code.replace(
-    /  async function loadLand\(\) \{[\s\S]*?\n  \}\n\n  function hideLoading/,
+    /  async function loadLand\(\) \{[\s\S]*?\n  \}\n\n  function defaultExploreAltitude/,
     [
       "  function loadLand() {",
-      "    state.globe?.polygonsData(Array.isArray(window.WORLD_COUNTRIES) ? window.WORLD_COUNTRIES : []);",
+      "    const features = Array.isArray(window.WORLD_COUNTRIES) ? window.WORLD_COUNTRIES : [];",
+      "    state.globe?.polygonsData(prepareLand(features));",
+      "    refreshCountryStyles();",
       "  }",
       "",
-      "  function hideLoading"
+      "  function defaultExploreAltitude"
     ].join("\n")
+  );
+  code = code.replace(
+    /  function loadCompanyLogo\(textureKey, company\) \{[\s\S]*?\n  \}\n\n  function markerLabelTexture/,
+    "  function loadCompanyLogo() { return; }\n\n  function markerLabelTexture"
   );
   code = code.replace(
     /    if \(!xhsMode\) \{\n      window\.addEventListener\("popstate", \(\) => \{[\s\S]*?\n      \}\);\n    \}\n/,
@@ -122,16 +131,23 @@ function makeOfflineHtml(sourceHtml) {
   html = html.replace(
     /    <script src="[^"]*globe\.gl[^"]*"><\/script>\n    <script src="data\.js"><\/script>\n    <script src="data-month\.js"><\/script>\n    <script src="data-remote\.js"><\/script>\n    <script src="data-china\.js"><\/script>\n    <script src="data-locations\.js"><\/script>\n    <script type="module">\n      import \* as THREE from "[^"]*three[^"]*";\n      window\.THREE = THREE;\n      await import\("\.\/explore\.js(?:\?v=[^"]+)?"\);\n    <\/script>/,
     [
-      "    <script defer src=\"mode-xhs.js\"></script>",
-      "    <script defer src=\"world-data.js\"></script>",
-      "    <script defer src=\"local-globe.js\"></script>",
-      "    <script defer src=\"jobs-data.js\"></script>"
+      "    <script defer src=\"./mode-xhs.js\"></script>",
+      "    <script defer src=\"./world-data.js\"></script>",
+      "    <script defer src=\"./local-globe.js\"></script>",
+      "    <script defer src=\"./jobs-data.js\"></script>",
+      "    <script defer src=\"./explore.js\"></script>"
     ].join("\n")
   );
   if (html.includes("unpkg.com/globe.gl") || html.includes("unpkg.com/three@") || html.includes("data-china.js")) {
     throw new Error("离线页面的数据脚本替换失败");
   }
+  html = html.replace(
+    /<a class="job-action job-action-primary" id="card-apply"[^>]*>([\s\S]*?)<\/a>/,
+    '<button class="job-action job-action-primary" id="card-apply" type="button">$1</button>'
+  );
   html = html.replace(' href="#" target="_blank" rel="noreferrer noopener"', "");
+  html = html.replace(/(?:href|src)="(?![.#])([^":]+)"/g, (match, resource) =>
+    match.replace(`\"${resource}\"`, `\"./${resource}\"`));
   return html;
 }
 

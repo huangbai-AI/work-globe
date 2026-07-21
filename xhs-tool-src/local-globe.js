@@ -74,7 +74,7 @@
       this._drag = null;
       this._pinchDistance = 0;
 
-      const listeners = { start: [] };
+      const listeners = { start: [], change: [], end: [] };
       this._controls = {
         autoRotate: true,
         autoRotateSpeed: 0.14,
@@ -127,6 +127,7 @@
           const sensitivity = 0.22 * Math.max(1, this._altitude / 1.7);
           this._centerLng = wrappedLongitude(this._drag.lng - (event.clientX - this._drag.x) * sensitivity);
           this._centerLat = clamp(this._drag.lat + (event.clientY - this._drag.y) * sensitivity, -80, 80);
+          this._controls._emit("change");
           return;
         }
         if (event.pointerType !== "touch") this._showTooltip(event.clientX, event.clientY);
@@ -137,6 +138,7 @@
         const moved = Math.hypot(event.clientX - this._drag.startX, event.clientY - this._drag.startY);
         this._drag = null;
         if (moved < 9) this._activateAt(event.clientX, event.clientY);
+        this._controls._emit("end");
       };
 
       this.canvas.addEventListener("pointerup", finishPointer);
@@ -154,6 +156,8 @@
         event.preventDefault();
         this._controls._emit("start");
         this._altitude = clamp(this._altitude + event.deltaY * 0.0012, 1.15, 3.1);
+        this._controls._emit("change");
+        this._controls._emit("end");
       }, { passive: false });
     }
 
@@ -394,8 +398,10 @@
     polygonAltitude(value) { return this._chain("polygonAltitude", value); }
     polygonCapCurvatureResolution(value) { return this._chain("polygonCapCurvatureResolution", value); }
     polygonCapColor(value) { return this._chain("polygonCapColor", value); }
+    polygonCapMaterial() { return this; }
     polygonSideColor(value) { return this._chain("polygonSideColor", value); }
     polygonStrokeColor(value) { return this._chain("polygonStrokeColor", value); }
+    polygonLabel(value) { return this._chain("polygonLabel", value); }
     polygonsTransitionDuration(value) { return this._chain("polygonsTransitionDuration", value); }
     pointsData(value) { return this._chain("points", value); }
     pointLat(value) { return this._chain("pointLat", value); }
@@ -405,6 +411,13 @@
     pointColor(value) { return this._chain("pointColor", value); }
     pointResolution(value) { return this._chain("pointResolution", value); }
     pointLabel(value) { return this._chain("pointLabel", value); }
+    objectsData() { return this; }
+    objectLat() { return this; }
+    objectLng() { return this; }
+    objectAltitude() { return this; }
+    objectFacesSurface() { return this; }
+    objectThreeObject() { return this; }
+    objectLabel() { return this; }
     ringsData(value) { return this._chain("rings", value); }
     ringLat(value) { return this._chain("ringLat", value); }
     ringLng(value) { return this._chain("ringLng", value); }
@@ -414,6 +427,10 @@
     ringRepeatPeriod(value) { return this._chain("ringRepeatPeriod", value); }
     onPointClick(value) { return this._chain("onPointClick", value); }
     onPointHover(value) { return this._chain("onPointHover", value); }
+    onObjectClick() { return this; }
+    onObjectHover() { return this; }
+    onPolygonClick(value) { return this._chain("onPolygonClick", value); }
+    onPolygonHover(value) { return this._chain("onPolygonHover", value); }
     onGlobeClick(value) { return this._chain("onGlobeClick", value); }
     onGlobeReady(value) {
       this._onGlobeReady = value;

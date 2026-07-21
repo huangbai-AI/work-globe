@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "description": "OpenWork globe job explorer",
   "scripts": {
-    "test:smoke": "node tests/smoke.mjs"
+    "test:smoke": "node tests/smoke.mjs",
+    "build:xhs": "node scripts/build_xhs_tool.mjs",
+    "validate:xhs": "node scripts/validate_xhs_tool.mjs"
   },
   "dependencies": {
     "globe.gl": "2.46.1",

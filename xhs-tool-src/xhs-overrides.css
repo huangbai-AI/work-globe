@@ -6,6 +6,25 @@
   cursor: grab;
 }
 
+:root { --xhs-keyboard-inset: 0px; }
+
+html { touch-action: manipulation; }
+
+.is-xhs-tool {
+  -webkit-touch-callout: none;
+}
+
+.is-xhs-tool button,
+.is-xhs-tool a,
+.is-xhs-tool input {
+  touch-action: manipulation;
+}
+
+.is-xhs-tool .result-list {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
 .local-globe-canvas:active { cursor: grabbing; }
 
 .local-globe-tooltip {
@@ -37,14 +56,14 @@
 
 @media (max-width: 760px) {
   .is-xhs-tool .app-header {
-    padding-top: env(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top, 0px);
   }
 
   .is-xhs-tool .landing-footer {
-    bottom: max(18px, env(safe-area-inset-bottom));
+    bottom: max(18px, env(safe-area-inset-bottom, 0px));
   }
 
   .is-xhs-tool .search-zone {
-    bottom: max(14px, env(safe-area-inset-bottom));
+    bottom: max(14px, env(safe-area-inset-bottom, 0px), var(--xhs-keyboard-inset));
   }
 }

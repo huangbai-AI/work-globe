@@ -47,7 +47,8 @@ python3 -m http.server 4182
 生成待上传的压缩包：
 
 ```bash
-node scripts/build_xhs_tool.mjs
+npm run build:xhs
+npm run validate:xhs
 ```
 
-产物位于 `releases/openwork-xhs.zip`，提交表单可使用 `releases/openwork-icon.png` 作为小工具图标。每周重新收集并核对岗位数据后，再运行一次脚本，就会生成包含最新数据的新版本；网页版本不会因此受到影响。
+产物位于 `releases/openwork-xhs.zip`，提交表单可使用 `releases/openwork-icon.png` 作为小工具图标。国家边界已固化在项目内，打包不依赖网络。每周重新收集并核对岗位数据后，再依次运行构建与校验命令，就会生成包含最新数据的新版本；网页版本不会因此受到影响。
