@@ -1,46 +1,45 @@
 # Design QA
 
-- Source visual truth: `/Users/huangshaoshuai/.codex/generated_images/019f8358-13e8-7f22-be95-e6ba8ab5aede/exec-ff04ec53-2fcd-457c-a70d-d63b2fb24a03.png`
+- Source visual truth: `/var/folders/lx/6r9vdddj2k98rm7xg5g8hb7h0000gn/T/codex-clipboard-61afe6d3-5065-4dbe-814e-4f9e5d1c5a97.png`
 - Implementation screenshot: `/Users/huangshaoshuai/Documents/New project/work-globe/openwork-qa-desktop.png`
-- Viewport: 1518 × 1079 desktop for both images.
-- State: explore view, a job selected, category menu expanded.
+- Side-by-side comparison: `/tmp/openwork-palette-comparison.png`
+- Viewport: source 1487 × 1058; implementation captured at 1488 × 1058 and normalized by cropping one right-edge pixel.
+- State: desktop explore view, default category, all city-precision jobs visible.
 
 ## Full-view comparison evidence
 
-- The selected-state globe now fills the view behind the top detail panel at the same visual scale as the reference.
-- The detail panel is wide and shallow, with its actions on the right, so the map remains the dominant surface.
-- The bottom search dock and upward-opening category menu retain the reference placement; the category label and chevron intentionally share one pill control per the latest brief.
+- The reference and implementation were placed in one side-by-side comparison image before judging the result.
+- Both now use the same light, low-saturation country family: dusty blush, pale apricot, powder blue, sage, warm stone, and lavender gray.
+- White country boundaries remain clear against every fill, including small European countries and dense African borders.
+- The globe sphere retains its blue-gray gradient and the country plates remain visually separated from it by the existing subtle side shadow.
+- No focused crop was needed: country fills occupy most of both full-view captures and are large enough to compare color, flatness, borders, and separation directly.
 
-## Focused region comparison evidence
+## Required fidelity surfaces
 
-- Job markers read as flat-color map tacks: enlarged high-purity macaron heads, exposed short metal stems, and larger clustered tacks only where nearby jobs overlap.
-- Every individual tack carries a centered company identifier. The `Anthropic` focused case loaded its real brand mark from the icon library; the unknown `garden3d` case displayed the `GA` fallback abbreviation.
-- Every black stem follows the local globe normal, and its tack head plus company identifier share the same center axis with no lateral offset.
-- The opening explore view is the 0% zoom baseline, so overlapping jobs start clustered. At 40% of the path from that baseline to maximum zoom, they switch symmetrically to individual tacks at their city-precision coordinates.
-- Country caps remain solid Morandi colors with white closed borders. Shared-border adjacency excludes the same or similar hue group, while palette balancing gives the Americas visibly broader color variety.
-- The shared closed rings stay connected, while the raised uniform cap altitude and higher tack base eliminate sphere/country and country/tack intersections.
-- The globe keeps a subtle sphere gradient and a restrained plate-to-sphere shadow.
+- Fonts and typography: unchanged and outside this palette-only request; no new wrapping or hierarchy regression is visible.
+- Spacing and layout rhythm: unchanged; header, globe, search dock, and persistent controls keep their existing positions.
+- Colors and visual tokens: the former mid-tone Morandi palette was replaced with ten sampled/inferred light tokens. All tokens have an average RGB channel value of at least 205 and a channel spread no greater than 40, while the six hue groups still prevent adjacent countries from sharing the same apparent family.
+- Image quality and asset fidelity: no new raster or generated assets were required. Country caps remain clean solid fills with no texture, noise, or compression artifacts.
+- Copy and content: unchanged.
 
-## Interaction verification
+## Comparison history
 
-- Default `全部类型` renders every city-precision job immediately; selecting a category filters the marker set.
-- Clicking a country, a single tack, or an overlap cluster feeds the same top detail carousel.
-- Pointer movement, drag, and wheel activity stop auto-rotation immediately; rotation resumes after 1.8 seconds of inactivity.
-- The combined category control opens once and exposes all 16 category options.
-- Brand icon loading is cached per company and falls back locally without blocking map rendering.
-- Browser verification found a rendered WebGL canvas, hidden fallback/loading states, and no console errors in default, known-logo, and unknown-logo cases.
+1. Initial finding — P1: the implementation screenshot at `/tmp/openwork-palette-before.png` showed country fills one full lightness tier darker than the reference, especially salmon, ochre, green, and lavender regions.
+2. Fix: replaced the ten country tokens with lighter reference-derived values while preserving the existing adjacency graph, hue grouping, white strokes, raised cap altitude, and globe material.
+3. Cache correction: versioned the dynamic `explore.js` import so an already-open browser cannot retain the previous palette after a normal reload.
+4. Post-fix evidence: `/Users/huangshaoshuai/Documents/New project/work-globe/openwork-qa-desktop.png` and `/tmp/openwork-palette-comparison.png` show the corrected light palette. Browser console check returned no errors.
 
 ## Findings
 
-- No remaining P0, P1, or P2 visual issues in the requested scope.
-- [P3] Dense regions intentionally use count badges from the opening view through the first 40% of manual zoom; crossing that baseline-relative threshold in either direction releases or recombines the company-labelled tacks.
+- No remaining P0, P1, or P2 issues in the requested country-color scope.
+- [P3] The implementation background is warmer than the blue-tinted reference canvas, but it was intentionally left unchanged because the request targets country fills only.
 
 ## Automated evidence
 
-- 177 country polygons loaded.
-- 140 clustered markers at the initial test view.
-- The default desktop explore altitude produces a clustered set; reaching 40% of the path toward maximum zoom produces 738 individual markers, returning below it restores the clustered set, and crossing upward releases the same 738 markers again.
-- More than 100 shared-border adjacency pairs are detected; all avoid identical palette entries, the Americas use at least eight palette colors, and United States adjacency with Canada and Mexico is explicitly asserted.
-- Country rings are closed, radial tack alignment plus raised cap/tack altitudes are asserted, macaron tack colors and company textures are asserted, and filtering plus pause/resume rotation behavior remain covered.
+- 177 country polygons load successfully.
+- More than 100 shared-border neighbor pairs remain detected and every pair avoids the same palette index.
+- The Americas still use at least eight palette entries.
+- The new test asserts at least eight distinct light country colors and prevents a return to darker or highly saturated fills.
+- Existing country borders, raised plates, marker scaling, aggregation, filtering, and interaction tests pass.
 
 final result: passed

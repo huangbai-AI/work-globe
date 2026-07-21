@@ -120,7 +120,7 @@ function makeOfflineHtml(sourceHtml) {
     "    <link rel=\"stylesheet\" href=\"styles.css\" />\n    <link rel=\"stylesheet\" href=\"xhs-overrides.css\" />"
   );
   html = html.replace(
-    /    <script src="node_modules\/globe\.gl\/dist\/globe\.gl\.min\.js"><\/script>\n    <script src="data\.js"><\/script>\n    <script src="data-month\.js"><\/script>\n    <script src="data-remote\.js"><\/script>\n    <script src="data-china\.js"><\/script>\n    <script src="data-locations\.js"><\/script>\n    <script type="module">\n      import \* as THREE from "\.\/node_modules\/three\/build\/three\.module\.min\.js";\n      window\.THREE = THREE;\n      await import\("\.\/explore\.js"\);\n    <\/script>/,
+    /    <script src="node_modules\/globe\.gl\/dist\/globe\.gl\.min\.js"><\/script>\n    <script src="data\.js"><\/script>\n    <script src="data-month\.js"><\/script>\n    <script src="data-remote\.js"><\/script>\n    <script src="data-china\.js"><\/script>\n    <script src="data-locations\.js"><\/script>\n    <script type="module">\n      import \* as THREE from "\.\/node_modules\/three\/build\/three\.module\.min\.js";\n      window\.THREE = THREE;\n      await import\("\.\/explore\.js(?:\?v=[^"]+)?"\);\n    <\/script>/,
     [
       "    <script defer src=\"mode-xhs.js\"></script>",
       "    <script defer src=\"world-data.js\"></script>",

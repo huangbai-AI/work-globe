@@ -9,7 +9,7 @@ assert.ok(
   html.indexOf("node_modules/globe.gl/dist/globe.gl.min.js") < html.indexOf("node_modules/three/build/three.module.min.js"),
   "Globe.gl 必须先于供圆钉使用的 Three.js 载入"
 );
-assert.match(html, /await import\("\.\/explore\.js"\)/, "岗位模块应在新版 Three.js 就绪后载入");
+assert.match(html, /await import\("\.\/explore\.js(?:\?v=[^"]+)?"\)/, "岗位模块应在新版 Three.js 就绪后载入");
 const world = JSON.parse(await readFile(
   new URL("node_modules/globe.gl/example/datasets/ne_110m_admin_0_countries.geojson", projectRoot),
   "utf8"
@@ -46,6 +46,7 @@ const globeState = {
   polygons: [],
   objects: [],
   objectFactory: null,
+  polygonCapColorAccessor: null,
   polygonAltitudeAccessor: null,
   objectAltitudeAccessor: null,
   pov: { lat: 20, lng: 20, altitude: 1.22 },
@@ -89,6 +90,10 @@ function createGlobe() {
     polygonsData(value) {
       if (!value) return globeState.polygons;
       globeState.polygons = value;
+      return proxy;
+    },
+    polygonCapColor(value) {
+      globeState.polygonCapColorAccessor = value;
       return proxy;
     },
     polygonAltitude(value) {
@@ -181,6 +186,14 @@ const neighboringPairs = globeState.polygons.flatMap((country, index) => (
 ));
 assert.ok(neighboringPairs.length > 100, "应建立足够完整的国家相邻关系");
 assert.ok(neighboringPairs.every(([first, second]) => first._paletteIndex !== second._paletteIndex), "相邻国家不能使用完全相同的颜色");
+const countryColors = new Set(globeState.polygons.map(globeState.polygonCapColorAccessor));
+const colorChannels = (color) => color.match(/[0-9a-f]{2}/gi).map((channel) => Number.parseInt(channel, 16));
+assert.ok(countryColors.size >= 8, "浅色国家色板仍应保留足够的色彩变化");
+assert.ok([...countryColors].every((color) => {
+  const channels = colorChannels(color);
+  const average = channels.reduce((sum, channel) => sum + channel, 0) / channels.length;
+  return average >= 205 && Math.max(...channels) - Math.min(...channels) <= 40;
+}), "国家填充应使用参考图中的浅明度、低饱和莫兰迪色系");
 const americas = globeState.polygons.filter((country) => country.properties?.REGION_UN === "Americas");
 assert.ok(new Set(americas.map((country) => country._paletteIndex)).size >= 8, "美洲国家应使用多样化的莫兰迪配色");
 const usaIndex = globeState.polygons.findIndex((country) => country.properties?.ADMIN === "United States of America");

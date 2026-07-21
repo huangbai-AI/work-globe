@@ -15,8 +15,8 @@
     || params.has("job")
     || params.has("category");
   const countryPalette = [
-    "#D7A29B", "#A9BDA9", "#AABBD3", "#D8BD84", "#B8A9C9",
-    "#C69B82", "#8FB7B1", "#C1B9A6", "#9FAFCA", "#C9AAB4"
+    "#E8CCC8", "#CBD7D0", "#C8D3DF", "#E9DBC3", "#D9CFE0",
+    "#E8D1C9", "#C7D8D5", "#DDD5C9", "#CED6E5", "#E3D0D8"
   ];
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
   const clusterSplitThreshold = 0.4;
