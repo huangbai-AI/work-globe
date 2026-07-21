@@ -10,13 +10,16 @@
     <link rel="preconnect" href="https://unpkg.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="styles.css" />
-    <script defer src="node_modules/globe.gl/dist/globe.gl.min.js"></script>
-    <script defer src="node_modules/three/build/three.min.js"></script>
-    <script defer src="data.js"></script>
-    <script defer src="data-month.js"></script>
-    <script defer src="data-remote.js"></script>
-    <script defer src="data-locations.js"></script>
-    <script defer src="explore.js"></script>
+    <script src="node_modules/globe.gl/dist/globe.gl.min.js"></script>
+    <script src="data.js"></script>
+    <script src="data-month.js"></script>
+    <script src="data-remote.js"></script>
+    <script src="data-locations.js"></script>
+    <script type="module">
+      import * as THREE from "./node_modules/three/build/three.module.min.js";
+      window.THREE = THREE;
+      await import("./explore.js");
+    </script>
   </head>
   <body class="app-page is-landing">
     <a class="skip-link explore-reveal" href="#job-search">跳到岗位搜索</a>

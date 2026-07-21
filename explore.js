@@ -18,7 +18,27 @@
     "#D7A29B", "#A9BDA9", "#AABBD3", "#D8BD84", "#B8A9C9",
     "#C69B82", "#8FB7B1", "#C1B9A6", "#9FAFCA", "#C9AAB4"
   ];
+  const pinPalette = [
+    "#FF8FA3", "#FFAA72", "#FFD45F", "#79D58A", "#5ED1B5",
+    "#55C8D8", "#6CAEF5", "#8B91F2", "#B780EA", "#F08CC5"
+  ];
+  const brandIconAliases = [
+    ["anthropic", "anthropic"], ["replit", "replit"], ["mastercard", "mastercard"],
+    ["capital one", "capitalone"], ["grafana", "grafana"], ["accenture", "accenture"],
+    ["sumup", "sumup"], ["flix", "flix"], ["openai", "openai"], ["microsoft", "microsoft"],
+    ["google", "google"], ["amazon web services", "amazonwebservices"], ["amazon", "amazon"],
+    ["apple", "apple"], ["netflix", "netflix"], ["airbnb", "airbnb"], ["spotify", "spotify"],
+    ["shopify", "shopify"], ["adobe", "adobe"], ["nvidia", "nvidia"], ["intel", "intel"],
+    ["cloudflare", "cloudflare"], ["datadog", "datadog"], ["dropbox", "dropbox"],
+    ["github", "github"], ["gitlab", "gitlab"], ["atlassian", "atlassian"],
+    ["notion", "notion"], ["figma", "figma"], ["canva", "canva"], ["reddit", "reddit"],
+    ["linkedin", "linkedin"], ["salesforce", "salesforce"], ["hubspot", "hubspot"],
+    ["stripe", "stripe"], ["twilio", "twilio"], ["zendesk", "zendesk"], ["uber", "uber"]
+  ];
   const countryMaterials = new Map();
+  const markerTextureCache = new Map();
+  const markerTextureRequests = new Set();
+  const markerTextureMaterials = new Map();
   const regionNames = typeof Intl.DisplayNames === "function"
     ? new Intl.DisplayNames(["zh-CN"], { type: "region" })
     : null;
@@ -136,6 +156,17 @@
 
   function normalize(value) {
     return String(value || "").trim().toLocaleLowerCase("zh-CN");
+  }
+
+  function stringHash(value) {
+    return [...normalize(value)].reduce((hash, character) => (
+      ((hash << 5) - hash + character.codePointAt(0)) | 0
+    ), 0);
+  }
+
+  function pinColorFor(job) {
+    const seed = job?.company || job?.title || job?.id || "OpenWork";
+    return pinPalette[Math.abs(stringHash(seed)) % pinPalette.length];
   }
 
   function matches(job) {
@@ -739,7 +770,7 @@
   }
 
   function countryAltitude(feature) {
-    return feature._countryKey === state.selectedCountryKey ? 0.004 : 0.002;
+    return feature._countryKey === state.selectedCountryKey ? 0.0075 : 0.0055;
   }
 
   function countrySideColor(feature) {
@@ -846,7 +877,7 @@
         isCluster: false,
         mapLat: job.mapLat,
         mapLng: job.mapLng,
-        color: colorFor(job)
+        color: pinColorFor(job)
       }));
     }
     const thresholdKm = (isTouch ? 44 : 36) + (1 - zoomProgress()) * (isTouch ? 58 : 48);
@@ -873,7 +904,7 @@
           isCluster: false,
           mapLat: job.mapLat,
           mapLng: job.mapLng,
-          color: colorFor(job)
+          color: pinColorFor(job)
         };
       }
       const ordered = [...group.jobs].sort((a, b) => (b.attention || 0) - (a.attention || 0));
@@ -883,9 +914,103 @@
         isCluster: true,
         mapLat: group.center.lat,
         mapLng: group.center.lng,
-        color: colorFor(ordered[0])
+        color: pinColorFor(ordered[0])
       };
     });
+  }
+
+  function companyAbbreviation(company) {
+    const cleaned = String(company || "OW")
+      .replace(/&amp;/gi, "&")
+      .replace(/\b(gmbh|inc|llc|ltd|limited|company|corp|corporation|client|team)\b/gi, " ")
+      .replace(/[^\p{L}\p{N}]+/gu, " ")
+      .trim();
+    const words = cleaned.match(/[\p{L}\p{N}]+/gu) || ["OW"];
+    if (words.length === 1) return [...words[0]].slice(0, 2).join("").toLocaleUpperCase("zh-CN");
+    return words.slice(0, 2).map((word) => [...word][0]).join("").toLocaleUpperCase("zh-CN");
+  }
+
+  function brandIconSlug(company) {
+    const name = normalize(company).replace(/&amp;/g, "and");
+    return brandIconAliases.find(([alias]) => name === alias || name.includes(alias))?.[1] || null;
+  }
+
+  function configureMarkerTexture(texture) {
+    if (!texture || !window.THREE) return texture;
+    if (window.THREE.SRGBColorSpace) texture.colorSpace = window.THREE.SRGBColorSpace;
+    texture.minFilter = window.THREE.LinearFilter;
+    texture.magFilter = window.THREE.LinearFilter;
+    texture.needsUpdate = true;
+    return texture;
+  }
+
+  function createMarkerLabelCanvas() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const context = canvas.getContext("2d");
+    if (context) {
+      context.clearRect(0, 0, 64, 64);
+      context.beginPath();
+      context.arc(32, 32, 28, 0, Math.PI * 2);
+      context.fillStyle = "rgba(255,255,252,0.9)";
+      context.fill();
+    }
+    return { canvas, context };
+  }
+
+  function createTextTexture(text) {
+    const { canvas, context } = createMarkerLabelCanvas();
+    if (context) {
+      context.fillStyle = "#243034";
+      context.font = `${text.length > 2 ? 700 : 760} ${text.length > 2 ? 24 : 31}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(text, 32, 33);
+    }
+    return configureMarkerTexture(new window.THREE.CanvasTexture(canvas));
+  }
+
+  function loadCompanyLogo(textureKey, company) {
+    const slug = brandIconSlug(company);
+    if (!slug || !window.THREE || markerTextureRequests.has(textureKey)) return;
+    markerTextureRequests.add(textureKey);
+    const loader = new window.THREE.TextureLoader();
+    loader.setCrossOrigin("anonymous");
+    loader.load(
+      `https://cdn.simpleicons.org/${encodeURIComponent(slug)}/243034?viewbox=auto`,
+      (loadedTexture) => {
+        const { canvas, context } = createMarkerLabelCanvas();
+        if (context && loadedTexture.image) context.drawImage(loadedTexture.image, 14, 14, 36, 36);
+        const logoTexture = configureMarkerTexture(new window.THREE.CanvasTexture(canvas));
+        const fallbackTexture = markerTextureCache.get(textureKey);
+        markerTextureCache.set(textureKey, logoTexture);
+        markerTextureMaterials.get(textureKey)?.forEach((material) => {
+          material.map = logoTexture;
+          material.needsUpdate = true;
+        });
+        loadedTexture.dispose?.();
+        fallbackTexture?.dispose?.();
+      },
+      undefined,
+      () => { /* 找不到可用品牌图标时保留公司简称。 */ }
+    );
+  }
+
+  function markerLabelTexture(marker) {
+    const company = marker.job?.company || marker.jobs?.[0]?.company || "OpenWork";
+    const label = marker.isCluster
+      ? (marker.jobs.length > 99 ? "99+" : String(marker.jobs.length))
+      : companyAbbreviation(company);
+    const textureKey = marker.isCluster ? `cluster:${label}` : `company:${normalize(company)}`;
+    if (!markerTextureCache.has(textureKey)) markerTextureCache.set(textureKey, createTextTexture(label));
+    if (!marker.isCluster) loadCompanyLogo(textureKey, company);
+    return { textureKey, texture: markerTextureCache.get(textureKey) };
+  }
+
+  function registerMarkerTextureMaterial(textureKey, material) {
+    if (!markerTextureMaterials.has(textureKey)) markerTextureMaterials.set(textureKey, new Set());
+    markerTextureMaterials.get(textureKey).add(material);
   }
 
   function markerObject(marker) {
@@ -895,9 +1020,11 @@
     const headRadius = clustered
       ? Math.min(2.2, 1.62 + Math.log10(marker.jobs.length + 1) * 0.3)
       : 1.34;
+    const pinAngle = (Math.abs(stringHash(marker.id)) % 360) * Math.PI / 180;
+    const lateralOffset = headRadius * (clustered ? 1.42 : 1.45);
     const headPosition = new window.THREE.Vector3(
-      0,
-      headRadius * (clustered ? 1.42 : 1.55),
+      clustered ? 0 : Math.cos(pinAngle) * lateralOffset,
+      clustered ? lateralOffset : Math.sin(pinAngle) * lateralOffset,
       headRadius * (clustered ? 0.68 : 0.72)
     );
     const stemDirection = headPosition.clone().normalize();
@@ -916,6 +1043,24 @@
     );
     head.position.copy(headPosition);
     group.add(head);
+
+    const { textureKey, texture } = markerLabelTexture(marker);
+    const labelMaterial = new window.THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      alphaTest: 0.04,
+      depthWrite: false,
+      side: window.THREE.DoubleSide
+    });
+    const label = new window.THREE.Mesh(
+      new window.THREE.CircleGeometry(headRadius * (clustered ? 0.6 : 0.62), 24),
+      labelMaterial
+    );
+    label.position.copy(headPosition);
+    label.position.z += headRadius * 1.08;
+    label.renderOrder = 5;
+    registerMarkerTextureMaterial(textureKey, labelMaterial);
+    group.add(label);
 
     const hitTarget = new window.THREE.Mesh(
       new window.THREE.SphereGeometry(headRadius * (isTouch ? 1.42 : 1.2), 12, 8),
@@ -945,6 +1090,7 @@
     const markers = buildMarkers(visibleJobs);
     state.markers = markers;
     state.markerObjects.clear();
+    markerTextureMaterials.clear();
     if (window.THREE && typeof state.globe.objectsData === "function") {
       state.globe
         .pointsData([])
@@ -1200,7 +1346,7 @@
         .objectsData([])
         .objectLat("mapLat")
         .objectLng("mapLng")
-        .objectAltitude(() => 0.004)
+        .objectAltitude(() => 0.0085)
         .objectFacesSurface(true)
         .objectThreeObject(markerObject)
         .objectLabel(tooltip)

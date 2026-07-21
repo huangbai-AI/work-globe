@@ -13,8 +13,10 @@
 
 ## Focused region comparison evidence
 
-- Job markers read as flat-color map tacks: enlarged round heads, exposed short metal stems, and larger clustered tacks only where nearby jobs overlap.
-- Country caps remain solid Morandi colors with white closed borders. Raw shared outer rings and reduced plate altitude remove the earlier broken seams and edge intersections.
+- Job markers read as flat-color map tacks: enlarged high-purity macaron heads, exposed short metal stems, and larger clustered tacks only where nearby jobs overlap.
+- Every individual tack carries a centered company identifier. The `Anthropic` focused case loaded its real brand mark from the icon library; the unknown `garden3d` case displayed the `GA` fallback abbreviation.
+- Co-located individual jobs fan their tack heads around the shared geographic base after the 50% expansion threshold, keeping each company identifier legible without inventing a different city.
+- Country caps remain solid Morandi colors with white closed borders. The shared closed rings stay connected, while the raised uniform cap altitude and higher tack base eliminate sphere/country and country/tack intersections.
 - The globe keeps a subtle sphere gradient and a restrained plate-to-sphere shadow.
 
 ## Interaction verification
@@ -23,18 +25,19 @@
 - Clicking a country, a single tack, or an overlap cluster feeds the same top detail carousel.
 - Pointer movement, drag, and wheel activity stop auto-rotation immediately; rotation resumes after 1.8 seconds of inactivity.
 - The combined category control opens once and exposes all 16 category options.
-- Browser verification found a rendered WebGL canvas, hidden fallback/loading states, and no console errors.
+- Brand icon loading is cached per company and falls back locally without blocking map rendering.
+- Browser verification found a rendered WebGL canvas, hidden fallback/loading states, and no console errors in default, known-logo, and unknown-logo cases.
 
 ## Findings
 
 - No remaining P0, P1, or P2 visual issues in the requested scope.
-- [P3] Dense regions intentionally remain visually busy at the closest pre-expansion zoom; zooming past 50% separates them into individual tacks.
+- [P3] Dense regions intentionally use count badges before the 50% expansion threshold; zooming farther separates them into company-labelled tacks.
 
 ## Automated evidence
 
 - 177 country polygons loaded.
 - 140 clustered markers at the initial test view.
 - 738 individual markers after the 50% zoom threshold.
-- Country rings are closed, the four-times tack-head size is asserted, the category filter is asserted, and pause/resume rotation behavior is asserted.
+- Country rings are closed, raised cap/tack altitudes are asserted, macaron tack colors and company textures are asserted, and filtering plus pause/resume rotation behavior remain covered.
 
 final result: passed

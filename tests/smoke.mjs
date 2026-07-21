@@ -6,9 +6,10 @@ import * as THREE from "three";
 const projectRoot = new URL("../", import.meta.url);
 const html = await readFile(new URL("index.html", projectRoot), "utf8");
 assert.ok(
-  html.indexOf("node_modules/globe.gl/dist/globe.gl.min.js") < html.indexOf("node_modules/three/build/three.min.js"),
+  html.indexOf("node_modules/globe.gl/dist/globe.gl.min.js") < html.indexOf("node_modules/three/build/three.module.min.js"),
   "Globe.gl 必须先于供圆钉使用的 Three.js 载入"
 );
+assert.match(html, /await import\("\.\/explore\.js"\)/, "岗位模块应在新版 Three.js 就绪后载入");
 const world = JSON.parse(await readFile(
   new URL("node_modules/globe.gl/example/datasets/ne_110m_admin_0_countries.geojson", projectRoot),
   "utf8"
@@ -25,6 +26,18 @@ window.requestAnimationFrame = (callback) => window.setTimeout(() => callback(wi
 window.cancelAnimationFrame = window.clearTimeout;
 window.fetch = async () => ({ ok: true, json: async () => world });
 window.THREE = THREE;
+window.HTMLCanvasElement.prototype.getContext = () => ({
+  clearRect() {},
+  beginPath() {},
+  arc() {},
+  fill() {},
+  fillText() {},
+  drawImage() {},
+  set fillStyle(_) {},
+  set font(_) {},
+  set textAlign(_) {},
+  set textBaseline(_) {}
+});
 
 const globeState = {
   handlers: {},
@@ -33,6 +46,8 @@ const globeState = {
   polygons: [],
   objects: [],
   objectFactory: null,
+  polygonAltitudeAccessor: null,
+  objectAltitudeAccessor: null,
   pov: { lat: 20, lng: 20, altitude: 1.22 },
   offset: [0, 0]
 };
@@ -74,6 +89,14 @@ function createGlobe() {
     polygonsData(value) {
       if (!value) return globeState.polygons;
       globeState.polygons = value;
+      return proxy;
+    },
+    polygonAltitude(value) {
+      globeState.polygonAltitudeAccessor = value;
+      return proxy;
+    },
+    objectAltitude(value) {
+      globeState.objectAltitudeAccessor = value;
       return proxy;
     },
     objectsData(value) {
@@ -130,6 +153,8 @@ assert.ok(borderRings.every((ring) => (
   && ring[0][0] === ring.at(-1)[0]
   && ring[0][1] === ring.at(-1)[1]
 )), "国家轮廓应保持闭合，避免接缝穿模");
+assert.ok(globeState.polygonAltitudeAccessor(globeState.polygons[0]) >= 0.0055, "国家板块应整体抬离球体表面");
+assert.ok(globeState.objectAltitudeAccessor() > globeState.polygonAltitudeAccessor(globeState.polygons[0]), "圆钉底座应位于国家板块上方");
 const clusteredMarkerCount = globeState.objects.length;
 globeState.pov.altitude = 1;
 globeState.controlHandlers.end();
@@ -138,9 +163,11 @@ assert.ok(globeState.objects.length > clusteredMarkerCount, "放大过半后聚�
 const expandedMarkerCount = globeState.objects.length;
 const samplePin = globeState.objectFactory(globeState.objects[0]);
 assert.equal(samplePin.isGroup, true, "圆钉应使用三维组合对象");
-assert.ok(samplePin.children.length >= 3, "圆钉应包含钉头、短针和触控区域");
+assert.ok(samplePin.children.length >= 4, "圆钉应包含短针、钉头、公司标识和触控区域");
 assert.ok(samplePin.children[1].geometry.parameters.radius >= 1.3, "单个岗位钉头应放大约四倍");
-assert.ok(Math.abs(samplePin.children[0].position.y) > 0.1, "短针应从钉头下方清晰露出");
+assert.ok(Math.hypot(samplePin.children[0].position.x, samplePin.children[0].position.y) > 0.1, "短针应从钉头下方清晰露出");
+assert.ok(samplePin.children[2].material.map, "圆钉头部应包含公司 Logo 或简称纹理");
+assert.ok(samplePin.children[1].material.color.getHexString() !== "647cf1", "圆钉应使用独立的高纯度马卡龙配色");
 
 window.document.querySelector("#work-globe").dispatchEvent(new window.Event("pointermove"));
 assert.equal(globeState.controls.autoRotate, false, "鼠标活动时应立即停止自动旋转");
