@@ -152,6 +152,42 @@
     return `rgba(${(value >> 16) & 255},${(value >> 8) & 255},${value & 255},${alpha})`;
   }
 
+  function adjustHexSaturation(hex, multiplier) {
+    const value = Number.parseInt(String(hex).replace("#", ""), 16);
+    const red = ((value >> 16) & 255) / 255;
+    const green = ((value >> 8) & 255) / 255;
+    const blue = (value & 255) / 255;
+    const maximum = Math.max(red, green, blue);
+    const minimum = Math.min(red, green, blue);
+    const lightness = (maximum + minimum) / 2;
+    const delta = maximum - minimum;
+    if (!delta) return hex;
+
+    let hue;
+    if (maximum === red) hue = ((green - blue) / delta) % 6;
+    else if (maximum === green) hue = (blue - red) / delta + 2;
+    else hue = (red - green) / delta + 4;
+    hue = (hue * 60 + 360) % 360;
+
+    const saturation = Math.min(1, (delta / (1 - Math.abs(2 * lightness - 1))) * multiplier);
+    const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+    const section = hue / 60;
+    const secondary = chroma * (1 - Math.abs((section % 2) - 1));
+    let shiftedRed = 0;
+    let shiftedGreen = 0;
+    let shiftedBlue = 0;
+    if (section < 1) [shiftedRed, shiftedGreen] = [chroma, secondary];
+    else if (section < 2) [shiftedRed, shiftedGreen] = [secondary, chroma];
+    else if (section < 3) [shiftedGreen, shiftedBlue] = [chroma, secondary];
+    else if (section < 4) [shiftedGreen, shiftedBlue] = [secondary, chroma];
+    else if (section < 5) [shiftedRed, shiftedBlue] = [secondary, chroma];
+    else [shiftedRed, shiftedBlue] = [chroma, secondary];
+    const match = lightness - chroma / 2;
+    return `#${[shiftedRed, shiftedGreen, shiftedBlue]
+      .map((channel) => Math.round((channel + match) * 255).toString(16).padStart(2, "0"))
+      .join("")}`;
+  }
+
   function colorFor(job) {
     return categories[job.category]?.color || "#647cf1";
   }
@@ -785,7 +821,10 @@
   }
 
   function landColor(feature) {
-    return countryPalette[feature._paletteIndex % countryPalette.length] || countryPalette[0];
+    const color = countryPalette[feature._paletteIndex % countryPalette.length] || countryPalette[0];
+    return feature._countryKey === state.selectedCountryKey
+      ? adjustHexSaturation(color, 1.6)
+      : color;
   }
 
   function landMaterial(feature) {
