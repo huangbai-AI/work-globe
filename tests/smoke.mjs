@@ -121,7 +121,7 @@ function createGlobe() {
 
 window.Globe = function Globe() { return createGlobe(); };
 
-for (const filename of ["data.js", "data-month.js", "data-remote.js", "data-locations.js", "explore.js"]) {
+for (const filename of ["data.js", "data-month.js", "data-remote.js", "data-china.js", "data-locations.js", "explore.js"]) {
   window.eval(await readFile(new URL(filename, projectRoot), "utf8"));
 }
 if (window.document.readyState === "loading") {
@@ -129,6 +129,27 @@ if (window.document.readyState === "loading") {
 }
 
 await new Promise((resolve) => window.setTimeout(resolve, 1000));
+
+const mainlandJobs = window.WORK_JOBS.filter((job) => job.location?.endsWith("中国大陆"));
+const mainlandCities = new Set(mainlandJobs.map((job) => job.mapCity));
+assert.ok(mainlandJobs.length >= 30, "应补充足够数量的中国大陆官方岗位");
+assert.deepEqual(
+  [...mainlandCities].sort(),
+  ["上海，中国大陆", "北京，中国大陆", "成都，中国大陆", "深圳，中国大陆", "苏州，中国大陆"].sort(),
+  "中国大陆岗位应覆盖五座已核实城市"
+);
+assert.ok(mainlandJobs.every((job) => (
+  job.mapPrecision === "city"
+  && job.mapBasis === "job-city"
+  && Number.isFinite(job.lat)
+  && Number.isFinite(job.lng)
+)), "中国大陆地图圆钉必须来自职位页明确城市");
+assert.deepEqual(
+  [...new Set(mainlandJobs.map((job) => job.company))].sort(),
+  ["Apple", "Microsoft", "NVIDIA"],
+  "中国大陆岗位应来自多个公司官方招聘渠道"
+);
+assert.ok(mainlandJobs.every((job) => /^https:\/\/(jobs\.apple\.com|apply\.careers\.microsoft\.com|nvidia\.wd5\.myworkdayjobs\.com)\//.test(job.sourceUrl)), "中国大陆岗位应保留官方申请链接");
 
 assert.equal(window.document.body.classList.contains("is-explore"), true);
 assert.equal(window.document.querySelectorAll(".category-option").length, 16);
