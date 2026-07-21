@@ -19,6 +19,7 @@
     "#E8D1C9", "#C7D8D5", "#DDD5C9", "#CED6E5", "#E3D0D8"
   ];
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
+  const countryCapCurvatureResolution = 0.75;
   const clusterSplitThreshold = 0.4;
   const pinPalette = [
     "#FF8FA3", "#FFAA72", "#FFD45F", "#79D58A", "#5ED1B5",
@@ -823,7 +824,7 @@
   function landColor(feature) {
     const color = countryPalette[feature._paletteIndex % countryPalette.length] || countryPalette[0];
     return feature._countryKey === state.selectedCountryKey
-      ? adjustHexSaturation(color, 1.6)
+      ? adjustHexSaturation(color, 3)
       : color;
   }
 
@@ -1396,6 +1397,7 @@
         .showGraticules(false)
         .polygonsData([])
         .polygonAltitude(countryAltitude)
+        .polygonCapCurvatureResolution(countryCapCurvatureResolution)
         .polygonCapColor(landColor)
         .polygonCapMaterial(landMaterial)
         .polygonSideColor(countrySideColor)

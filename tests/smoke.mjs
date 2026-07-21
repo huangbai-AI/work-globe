@@ -48,6 +48,7 @@ const globeState = {
   objectFactory: null,
   polygonCapColorAccessor: null,
   polygonAltitudeAccessor: null,
+  polygonCapCurvatureResolution: null,
   objectAltitudeAccessor: null,
   pov: { lat: 20, lng: 20, altitude: 1.22 },
   offset: [0, 0]
@@ -98,6 +99,10 @@ function createGlobe() {
     },
     polygonAltitude(value) {
       globeState.polygonAltitudeAccessor = value;
+      return proxy;
+    },
+    polygonCapCurvatureResolution(value) {
+      globeState.polygonCapCurvatureResolution = value;
       return proxy;
     },
     objectAltitude(value) {
@@ -210,6 +215,10 @@ const mexicoIndex = globeState.polygons.findIndex((country) => country.propertie
 assert.ok(globeState.polygons[usaIndex]._neighbors.has(canadaIndex), "美国与加拿大应识别为相邻国家");
 assert.ok(globeState.polygons[usaIndex]._neighbors.has(mexicoIndex), "美国与墨西哥应识别为相邻国家");
 assert.ok(globeState.polygonAltitudeAccessor(globeState.polygons[0]) >= 0.0055, "国家板块应整体抬离球体表面");
+assert.ok(
+  globeState.polygonCapCurvatureResolution > 0 && globeState.polygonCapCurvatureResolution <= 0.75,
+  "国家盖面应使用更细的球面曲率细分，避免大板块和高纬度边缘出现三角穿模"
+);
 assert.ok(globeState.objectAltitudeAccessor() > globeState.polygonAltitudeAccessor(globeState.polygons[0]), "圆钉底座应位于国家板块上方");
 globeState.pov.altitude = 1.22;
 globeState.controlHandlers.end();
@@ -270,7 +279,10 @@ assert.match(window.document.querySelector("#card-posted").textContent, /岗位/
 const countryColorAfterSelection = globeState.polygonCapColorAccessor(countryWithJobs);
 const beforeSelectionColor = colorSaturationAndLightness(countryColorBeforeSelection);
 const afterSelectionColor = colorSaturationAndLightness(countryColorAfterSelection);
-assert.ok(Math.abs(afterSelectionColor.saturation / beforeSelectionColor.saturation - 1.6) < 0.065, "选中国家后填充色纯度应提高 60%");
+assert.ok(
+  Math.abs(afterSelectionColor.saturation - Math.min(1, beforeSelectionColor.saturation * 3)) < 0.015,
+  "选中国家后填充色纯度应提高 200%"
+);
 assert.ok(Math.abs(afterSelectionColor.lightness - beforeSelectionColor.lightness) < 0.01, "选中国家后填充色明度应保持不变");
 
 globeState.handlers.onPolygonClick(nextCountryWithJobs, { stopPropagation() {} });
@@ -278,7 +290,10 @@ assert.equal(globeState.polygonCapColorAccessor(countryWithJobs), countryColorBe
 const nextCountryColorAfterSelection = globeState.polygonCapColorAccessor(nextCountryWithJobs);
 const nextBeforeSelectionColor = colorSaturationAndLightness(nextCountryColorBeforeSelection);
 const nextAfterSelectionColor = colorSaturationAndLightness(nextCountryColorAfterSelection);
-assert.ok(Math.abs(nextAfterSelectionColor.saturation / nextBeforeSelectionColor.saturation - 1.6) < 0.065, "切换后新国家的填充色纯度应提高 60%");
+assert.ok(
+  Math.abs(nextAfterSelectionColor.saturation - Math.min(1, nextBeforeSelectionColor.saturation * 3)) < 0.015,
+  "切换后新国家的填充色纯度应提高 200%"
+);
 await new Promise((resolve) => window.setTimeout(resolve, 200));
 globeState.handlers.onGlobeClick();
 assert.equal(globeState.polygonCapColorAccessor(nextCountryWithJobs), nextCountryColorBeforeSelection, "取消选择后国家应恢复原始纯度");

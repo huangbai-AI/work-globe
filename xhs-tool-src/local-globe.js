@@ -392,6 +392,7 @@
     showGraticules(value) { return this._chain("showGraticules", value); }
     polygonsData(value) { return this._chain("polygons", value); }
     polygonAltitude(value) { return this._chain("polygonAltitude", value); }
+    polygonCapCurvatureResolution(value) { return this._chain("polygonCapCurvatureResolution", value); }
     polygonCapColor(value) { return this._chain("polygonCapColor", value); }
     polygonSideColor(value) { return this._chain("polygonSideColor", value); }
     polygonStrokeColor(value) { return this._chain("polygonStrokeColor", value); }
