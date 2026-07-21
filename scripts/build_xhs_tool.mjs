@@ -120,7 +120,7 @@ function makeOfflineHtml(sourceHtml) {
     "    <link rel=\"stylesheet\" href=\"styles.css\" />\n    <link rel=\"stylesheet\" href=\"xhs-overrides.css\" />"
   );
   html = html.replace(
-    /    <script src="node_modules\/globe\.gl\/dist\/globe\.gl\.min\.js"><\/script>\n    <script src="data\.js"><\/script>\n    <script src="data-month\.js"><\/script>\n    <script src="data-remote\.js"><\/script>\n    <script src="data-china\.js"><\/script>\n    <script src="data-locations\.js"><\/script>\n    <script type="module">\n      import \* as THREE from "\.\/node_modules\/three\/build\/three\.module\.min\.js";\n      window\.THREE = THREE;\n      await import\("\.\/explore\.js(?:\?v=[^"]+)?"\);\n    <\/script>/,
+    /    <script src="[^"]*globe\.gl[^"]*"><\/script>\n    <script src="data\.js"><\/script>\n    <script src="data-month\.js"><\/script>\n    <script src="data-remote\.js"><\/script>\n    <script src="data-china\.js"><\/script>\n    <script src="data-locations\.js"><\/script>\n    <script type="module">\n      import \* as THREE from "[^"]*three[^"]*";\n      window\.THREE = THREE;\n      await import\("\.\/explore\.js(?:\?v=[^"]+)?"\);\n    <\/script>/,
     [
       "    <script defer src=\"mode-xhs.js\"></script>",
       "    <script defer src=\"world-data.js\"></script>",
@@ -128,7 +128,7 @@ function makeOfflineHtml(sourceHtml) {
       "    <script defer src=\"jobs-data.js\"></script>"
     ].join("\n")
   );
-  if (html.includes("node_modules/globe.gl") || html.includes("data-china.js")) {
+  if (html.includes("unpkg.com/globe.gl") || html.includes("unpkg.com/three@") || html.includes("data-china.js")) {
     throw new Error("离线页面的数据脚本替换失败");
   }
   html = html.replace(' href="#" target="_blank" rel="noreferrer noopener"', "");

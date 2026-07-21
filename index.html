@@ -10,16 +10,16 @@
     <link rel="preconnect" href="https://unpkg.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="styles.css" />
-    <script src="node_modules/globe.gl/dist/globe.gl.min.js"></script>
+    <script src="https://unpkg.com/globe.gl@2.46.1/dist/globe.gl.min.js"></script>
     <script src="data.js"></script>
     <script src="data-month.js"></script>
     <script src="data-remote.js"></script>
     <script src="data-china.js"></script>
     <script src="data-locations.js"></script>
     <script type="module">
-      import * as THREE from "./node_modules/three/build/three.module.min.js";
+      import * as THREE from "https://unpkg.com/three@0.185.1/build/three.module.min.js";
       window.THREE = THREE;
-      await import("./explore.js?v=20260721-country-selection-200-geometry");
+      await import("./explore.js?v=20260722-pr2-fixes");
     </script>
   </head>
   <body class="app-page is-landing">
@@ -114,14 +114,6 @@
             <input id="job-search" type="search" autocomplete="off" placeholder="搜索职位、公司或城市" aria-controls="result-sheet" />
             <span class="search-count" id="search-count" aria-live="polite"></span>
           </label>
-          <div class="category-filter" id="category-filter">
-            <button class="category-current category-toggle" id="category-toggle" type="button" aria-haspopup="listbox" aria-controls="category-menu" aria-expanded="false">
-              <i aria-hidden="true"></i>
-              <span>全部类型</span>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6" /></svg>
-            </button>
-            <div class="category-menu" id="category-menu" role="listbox" aria-label="工作类型" hidden></div>
-          </div>
         </form>
       </section>
 

@@ -6,9 +6,11 @@ import * as THREE from "three";
 const projectRoot = new URL("../", import.meta.url);
 const html = await readFile(new URL("index.html", projectRoot), "utf8");
 assert.ok(
-  html.indexOf("node_modules/globe.gl/dist/globe.gl.min.js") < html.indexOf("node_modules/three/build/three.module.min.js"),
-  "Globe.gl 必须先于供圆钉使用的 Three.js 载入"
+  html.indexOf("https://unpkg.com/globe.gl@2.46.1/dist/globe.gl.min.js")
+    < html.indexOf("https://unpkg.com/three@0.185.1/build/three.module.min.js"),
+  "线上 Globe.gl 必须先于供圆钉使用的 Three.js 载入"
 );
+assert.doesNotMatch(html, /(?:src=|from )"\.?\/?node_modules\//, "GitHub Pages 不能依赖未发布的 node_modules 文件");
 assert.match(html, /await import\("\.\/explore\.js(?:\?v=[^"]+)?"\)/, "岗位模块应在新版 Three.js 就绪后载入");
 const world = JSON.parse(await readFile(
   new URL("node_modules/globe.gl/example/datasets/ne_110m_admin_0_countries.geojson", projectRoot),
@@ -162,9 +164,7 @@ assert.deepEqual(
 assert.ok(mainlandJobs.every((job) => /^https:\/\/(jobs\.apple\.com|apply\.careers\.microsoft\.com|nvidia\.wd5\.myworkdayjobs\.com)\//.test(job.sourceUrl)), "中国大陆岗位应保留官方申请链接");
 
 assert.equal(window.document.body.classList.contains("is-explore"), true);
-assert.equal(window.document.querySelectorAll(".category-option").length, 16);
-assert.equal(window.document.querySelectorAll("#category-toggle").length, 1, "分类与箭头应合并为同一控件");
-assert.equal(window.document.querySelector("#category-toggle span").textContent, "全部类型");
+assert.equal(window.document.querySelectorAll("#category-toggle, #category-menu").length, 0, "底部应只保留搜索框，不再显示类型筛选");
 assert.equal(window.document.querySelector("#job-card").hidden, false);
 assert.ok(globeState.objects.length > 0, "岗位圆钉数据应载入");
 assert.ok(globeState.polygons.length > 100, "国家板块应载入");
@@ -258,11 +258,13 @@ assert.equal(globeState.controls.autoRotate, false, "鼠标活动时应立即停
 await new Promise((resolve) => window.setTimeout(resolve, 1850));
 assert.equal(globeState.controls.autoRotate, true, "鼠标空闲后应恢复自动旋转");
 
-window.document.querySelector("#category-toggle").click();
-assert.equal(window.document.querySelector("#category-menu").hidden, false);
-window.document.querySelector('[data-category="设计"]').click();
-assert.equal(window.document.querySelector("#category-toggle span").textContent, "设计");
-assert.match(window.location.search, /category=%E8%AE%BE%E8%AE%A1/);
+const searchInput = window.document.querySelector("#job-search");
+searchInput.value = "设计师";
+searchInput.dispatchEvent(new window.Event("input", { bubbles: true }));
+assert.match(window.location.search, /q=%E8%AE%BE%E8%AE%A1%E5%B8%88/, "关键词搜索应写入网址状态");
+assert.match(window.document.querySelector("#result-label").textContent, /找到 \d+ 个岗位/, "搜索结果应显示匹配数量");
+searchInput.value = "";
+searchInput.dispatchEvent(new window.Event("input", { bubbles: true }));
 
 const countryWithJobs = globeState.polygons.find((country) => country._jobs?.some((job) => job.category === "设计"));
 assert.ok(countryWithJobs, "应找到包含设计岗位的国家");
@@ -298,8 +300,19 @@ await new Promise((resolve) => window.setTimeout(resolve, 200));
 globeState.handlers.onGlobeClick();
 assert.equal(globeState.polygonCapColorAccessor(nextCountryWithJobs), nextCountryColorBeforeSelection, "取消选择后国家应恢复原始纯度");
 
+const countryWithoutJobs = globeState.polygons.find((country) => !(country._jobs || []).length);
+assert.ok(countryWithoutJobs, "应找到暂无岗位的国家用于状态切换测试");
+const emptyCountryColor = globeState.polygonCapColorAccessor(countryWithoutJobs);
+globeState.handlers.onPolygonClick(countryWithoutJobs, { stopPropagation() {} });
+assert.equal(window.document.querySelector("#result-sheet").hidden, false, "暂无岗位的国家应显示空结果说明");
+assert.notEqual(globeState.polygonCapColorAccessor(countryWithoutJobs), emptyCountryColor, "暂无岗位的国家也应显示选中反馈");
+globeState.handlers.onObjectClick(globeState.objects[0], { stopPropagation() {} });
+assert.equal(window.document.querySelector("#result-sheet").hidden, true, "点击岗位后应关闭上一个国家的空结果说明");
+assert.equal(globeState.polygonCapColorAccessor(countryWithoutJobs), emptyCountryColor, "从国家切换到岗位后应恢复国家基础色");
+assert.equal(window.document.querySelector("#job-card").hidden, false, "点击岗位后应显示岗位详情");
+
 console.log(JSON.stringify({
-  categories: 16,
+  searchOnly: true,
   countries: globeState.polygons.length,
   markers: globeState.objects.length,
   clusteredMarkers: clusteredMarkerCount,

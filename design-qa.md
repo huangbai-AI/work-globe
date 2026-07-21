@@ -7,7 +7,7 @@
 - High-latitude geometry screenshot: `/tmp/openwork-country-edges-075.png`
 - Side-by-side comparison: `/tmp/openwork-palette-comparison.png`
 - Viewport: source 1487 × 1058; implementation captured at 1488 × 1058 and normalized by cropping one right-edge pixel.
-- State: desktop explore view, default category, all city-precision jobs visible; country selection and country-to-country switching also verified.
+- State: desktop explore view, search keyword empty, all city-precision jobs visible; country selection、country-to-country switching and country-to-job switching also verified.
 
 ## Full-view comparison evidence
 
