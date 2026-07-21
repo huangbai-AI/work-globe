@@ -18,6 +18,8 @@
     "#D7A29B", "#A9BDA9", "#AABBD3", "#D8BD84", "#B8A9C9",
     "#C69B82", "#8FB7B1", "#C1B9A6", "#9FAFCA", "#C9AAB4"
   ];
+  const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
+  const clusterSplitThreshold = 0.6;
   const pinPalette = [
     "#FF8FA3", "#FFAA72", "#FFD45F", "#79D58A", "#5ED1B5",
     "#55C8D8", "#6CAEF5", "#8B91F2", "#B780EA", "#F08CC5"
@@ -701,27 +703,56 @@
     features.forEach((feature, featureIndex) => {
       feature._neighbors = new Set();
       geometryRings(feature._sourceGeometry || feature.geometry).forEach((ring) => {
-        ring.forEach(([lng, lat]) => {
-          const token = `${Math.round(lng * 5) / 5}|${Math.round(lat * 5) / 5}`;
-          if (!tokenOwners.has(token)) tokenOwners.set(token, []);
-          tokenOwners.get(token).push(featureIndex);
-        });
+        for (let index = 0; index < ring.length - 1; index += 1) {
+          const [startLng, startLat] = ring[index];
+          const [endLngRaw, endLat] = ring[index + 1];
+          let endLng = endLngRaw;
+          while (endLng - startLng > 180) endLng -= 360;
+          while (endLng - startLng < -180) endLng += 360;
+          const span = Math.max(Math.abs(endLng - startLng), Math.abs(endLat - startLat));
+          const steps = Math.max(1, Math.min(64, Math.ceil(span / 0.35)));
+          for (let step = 0; step <= steps; step += 1) {
+            const progress = step / steps;
+            let lng = startLng + (endLng - startLng) * progress;
+            while (lng > 180) lng -= 360;
+            while (lng < -180) lng += 360;
+            const lat = startLat + (endLat - startLat) * progress;
+            const token = `${Math.round(lng * 4) / 4}|${Math.round(lat * 4) / 4}`;
+            if (!tokenOwners.has(token)) tokenOwners.set(token, new Set());
+            tokenOwners.get(token).add(featureIndex);
+          }
+        }
       });
     });
     tokenOwners.forEach((owners) => {
-      const unique = [...new Set(owners)];
+      const unique = [...owners];
       unique.forEach((owner) => unique.forEach((neighbor) => {
         if (owner !== neighbor) features[owner]._neighbors.add(neighbor);
       }));
     });
+    const paletteUsage = countryPalette.map(() => 0);
     [...features.keys()]
       .sort((a, b) => features[b]._neighbors.size - features[a]._neighbors.size)
       .forEach((featureIndex) => {
-        const used = new Set([...features[featureIndex]._neighbors]
+        const usedPalette = new Set([...features[featureIndex]._neighbors]
           .map((neighbor) => features[neighbor]._paletteIndex)
           .filter(Number.isInteger));
-        features[featureIndex]._paletteIndex = countryPalette.findIndex((_, index) => !used.has(index));
-        if (features[featureIndex]._paletteIndex < 0) features[featureIndex]._paletteIndex = featureIndex % countryPalette.length;
+        const usedHueGroups = new Set([...usedPalette].map((index) => countryHueGroups[index]));
+        let candidates = countryPalette
+          .map((_, index) => index)
+          .filter((index) => !usedPalette.has(index) && !usedHueGroups.has(countryHueGroups[index]));
+        if (!candidates.length) {
+          candidates = countryPalette.map((_, index) => index).filter((index) => !usedPalette.has(index));
+        }
+        const preferred = Math.abs(stringHash(features[featureIndex]._countryKey)) % countryPalette.length;
+        candidates.sort((first, second) => (
+          paletteUsage[first] - paletteUsage[second]
+          || Math.min(Math.abs(first - preferred), countryPalette.length - Math.abs(first - preferred))
+            - Math.min(Math.abs(second - preferred), countryPalette.length - Math.abs(second - preferred))
+        ));
+        const selected = candidates[0] ?? preferred;
+        features[featureIndex]._paletteIndex = selected;
+        paletteUsage[selected] += 1;
       });
   }
 
@@ -869,7 +900,7 @@
   }
 
   function buildMarkers(list) {
-    if (zoomProgress() >= 0.5) {
+    if (zoomProgress() >= clusterSplitThreshold) {
       return list.map((job) => ({
         id: `job-${job.id}`,
         job,
@@ -1020,21 +1051,14 @@
     const headRadius = clustered
       ? Math.min(2.2, 1.62 + Math.log10(marker.jobs.length + 1) * 0.3)
       : 1.34;
-    const pinAngle = (Math.abs(stringHash(marker.id)) % 360) * Math.PI / 180;
-    const lateralOffset = headRadius * (clustered ? 1.42 : 1.45);
-    const headPosition = new window.THREE.Vector3(
-      clustered ? 0 : Math.cos(pinAngle) * lateralOffset,
-      clustered ? lateralOffset : Math.sin(pinAngle) * lateralOffset,
-      headRadius * (clustered ? 0.68 : 0.72)
-    );
-    const stemDirection = headPosition.clone().normalize();
-    const stemLength = Math.max(0.72, headPosition.length() - headRadius * 0.76);
+    const stemLength = clustered ? 0.74 : 0.66;
+    const headPosition = new window.THREE.Vector3(0, 0, stemLength + headRadius);
     const stem = new window.THREE.Mesh(
       new window.THREE.CylinderGeometry(clustered ? 0.13 : 0.1, clustered ? 0.13 : 0.1, stemLength, 8),
-      new window.THREE.MeshBasicMaterial({ color: "#5C6465" })
+      new window.THREE.MeshBasicMaterial({ color: "#202628" })
     );
-    stem.quaternion.setFromUnitVectors(new window.THREE.Vector3(0, 1, 0), stemDirection);
-    stem.position.copy(stemDirection).multiplyScalar(stemLength / 2);
+    stem.rotation.x = Math.PI / 2;
+    stem.position.set(0, 0, stemLength / 2);
     group.add(stem);
 
     const head = new window.THREE.Mesh(

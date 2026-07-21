@@ -153,19 +153,48 @@ assert.ok(borderRings.every((ring) => (
   && ring[0][0] === ring.at(-1)[0]
   && ring[0][1] === ring.at(-1)[1]
 )), "国家轮廓应保持闭合，避免接缝穿模");
+const neighboringPairs = globeState.polygons.flatMap((country, index) => (
+  [...country._neighbors]
+    .filter((neighbor) => neighbor > index)
+    .map((neighbor) => [country, globeState.polygons[neighbor]])
+));
+assert.ok(neighboringPairs.length > 100, "应建立足够完整的国家相邻关系");
+assert.ok(neighboringPairs.every(([first, second]) => first._paletteIndex !== second._paletteIndex), "相邻国家不能使用完全相同的颜色");
+const americas = globeState.polygons.filter((country) => country.properties?.REGION_UN === "Americas");
+assert.ok(new Set(americas.map((country) => country._paletteIndex)).size >= 8, "美洲国家应使用多样化的莫兰迪配色");
+const usaIndex = globeState.polygons.findIndex((country) => country.properties?.ADMIN === "United States of America");
+const canadaIndex = globeState.polygons.findIndex((country) => country.properties?.ADMIN === "Canada");
+const mexicoIndex = globeState.polygons.findIndex((country) => country.properties?.ADMIN === "Mexico");
+assert.ok(globeState.polygons[usaIndex]._neighbors.has(canadaIndex), "美国与加拿大应识别为相邻国家");
+assert.ok(globeState.polygons[usaIndex]._neighbors.has(mexicoIndex), "美国与墨西哥应识别为相邻国家");
 assert.ok(globeState.polygonAltitudeAccessor(globeState.polygons[0]) >= 0.0055, "国家板块应整体抬离球体表面");
 assert.ok(globeState.objectAltitudeAccessor() > globeState.polygonAltitudeAccessor(globeState.polygons[0]), "圆钉底座应位于国家板块上方");
 const clusteredMarkerCount = globeState.objects.length;
-globeState.pov.altitude = 1;
+globeState.pov.altitude = 0.9;
 globeState.controlHandlers.end();
 await new Promise((resolve) => window.setTimeout(resolve, 180));
-assert.ok(globeState.objects.length > clusteredMarkerCount, "放大过半后聚合圆钉应拆分");
+assert.ok(globeState.objects.length > clusteredMarkerCount, "缩放超过 60% 后聚合圆钉应拆分");
 const expandedMarkerCount = globeState.objects.length;
+globeState.pov.altitude = 0.96;
+globeState.controlHandlers.end();
+await new Promise((resolve) => window.setTimeout(resolve, 180));
+assert.ok(globeState.objects.length < expandedMarkerCount, "从高缩放回到 60% 以下时岗位应重新合并");
+globeState.pov.altitude = 0.9;
+globeState.controlHandlers.end();
+await new Promise((resolve) => window.setTimeout(resolve, 180));
+assert.equal(globeState.objects.length, expandedMarkerCount, "跨越 60% 阈值的双向行为应保持一致");
 const samplePin = globeState.objectFactory(globeState.objects[0]);
 assert.equal(samplePin.isGroup, true, "圆钉应使用三维组合对象");
 assert.ok(samplePin.children.length >= 4, "圆钉应包含短针、钉头、公司标识和触控区域");
 assert.ok(samplePin.children[1].geometry.parameters.radius >= 1.3, "单个岗位钉头应放大约四倍");
-assert.ok(Math.hypot(samplePin.children[0].position.x, samplePin.children[0].position.y) > 0.1, "短针应从钉头下方清晰露出");
+assert.ok(Math.abs(samplePin.children[0].rotation.x - Math.PI / 2) < 1e-6, "黑色短针应垂直于地球表面");
+assert.equal(samplePin.children[0].position.x, 0, "短针不能横向偏移");
+assert.equal(samplePin.children[0].position.y, 0, "短针不能纵向偏移");
+assert.equal(samplePin.children[1].position.x, 0, "圆头应与短针保持同轴");
+assert.equal(samplePin.children[1].position.y, 0, "圆头应与短针保持同轴");
+assert.ok(samplePin.children[1].position.z > samplePin.children[0].position.z, "圆头应位于短针正上方");
+assert.equal(samplePin.children[2].position.x, 0, "公司标识应居中在圆头上");
+assert.equal(samplePin.children[2].position.y, 0, "公司标识应居中在圆头上");
 assert.ok(samplePin.children[2].material.map, "圆钉头部应包含公司 Logo 或简称纹理");
 assert.ok(samplePin.children[1].material.color.getHexString() !== "647cf1", "圆钉应使用独立的高纯度马卡龙配色");
 
