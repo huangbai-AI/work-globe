@@ -16,7 +16,7 @@
 - Job markers read as flat-color map tacks: enlarged high-purity macaron heads, exposed short metal stems, and larger clustered tacks only where nearby jobs overlap.
 - Every individual tack carries a centered company identifier. The `Anthropic` focused case loaded its real brand mark from the icon library; the unknown `garden3d` case displayed the `GA` fallback abbreviation.
 - Every black stem follows the local globe normal, and its tack head plus company identifier share the same center axis with no lateral offset.
-- At the 60% zoom threshold, overlapping jobs switch symmetrically between clustered and individual tacks; released jobs remain at their city-precision coordinates.
+- The opening explore view is the 0% zoom baseline, so overlapping jobs start clustered. At 40% of the path from that baseline to maximum zoom, they switch symmetrically to individual tacks at their city-precision coordinates.
 - Country caps remain solid Morandi colors with white closed borders. Shared-border adjacency excludes the same or similar hue group, while palette balancing gives the Americas visibly broader color variety.
 - The shared closed rings stay connected, while the raised uniform cap altitude and higher tack base eliminate sphere/country and country/tack intersections.
 - The globe keeps a subtle sphere gradient and a restrained plate-to-sphere shadow.
@@ -33,13 +33,13 @@
 ## Findings
 
 - No remaining P0, P1, or P2 visual issues in the requested scope.
-- [P3] Dense regions intentionally use count badges below the 60% expansion threshold; crossing 60% in either direction releases or recombines the company-labelled tacks.
+- [P3] Dense regions intentionally use count badges from the opening view through the first 40% of manual zoom; crossing that baseline-relative threshold in either direction releases or recombines the company-labelled tacks.
 
 ## Automated evidence
 
 - 177 country polygons loaded.
 - 140 clustered markers at the initial test view.
-- 738 individual markers after the 60% zoom threshold; returning below 60% restores the clustered set and crossing upward releases the same 738 markers again.
+- The default desktop explore altitude produces a clustered set; reaching 40% of the path toward maximum zoom produces 738 individual markers, returning below it restores the clustered set, and crossing upward releases the same 738 markers again.
 - More than 100 shared-border adjacency pairs are detected; all avoid identical palette entries, the Americas use at least eight palette colors, and United States adjacency with Canada and Mexico is explicitly asserted.
 - Country rings are closed, radial tack alignment plus raised cap/tack altitudes are asserted, macaron tack colors and company textures are asserted, and filtering plus pause/resume rotation behavior remain covered.
 

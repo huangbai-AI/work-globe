@@ -19,7 +19,7 @@
     "#C69B82", "#8FB7B1", "#C1B9A6", "#9FAFCA", "#C9AAB4"
   ];
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
-  const clusterSplitThreshold = 0.6;
+  const clusterSplitThreshold = 0.4;
   const pinPalette = [
     "#FF8FA3", "#FFAA72", "#FFD45F", "#79D58A", "#5ED1B5",
     "#55C8D8", "#6CAEF5", "#8B91F2", "#B780EA", "#F08CC5"
@@ -867,10 +867,20 @@
     }
   }
 
+  function defaultExploreAltitude() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    if (width <= 920 && height <= 520) return 1.28;
+    return width <= 760 ? 1.42 : 1.22;
+  }
+
   function zoomProgress() {
-    const altitude = state.globe?.pointOfView()?.altitude ?? 1.4;
-    const distance = 100 * (1 + altitude);
-    return Math.max(0, Math.min(1, (320 - distance) / (320 - 108)));
+    const altitude = state.globe?.pointOfView()?.altitude ?? defaultExploreAltitude();
+    const defaultAltitude = defaultExploreAltitude();
+    const maximumZoomAltitude = 0.08;
+    return Math.max(0, Math.min(1,
+      (defaultAltitude - altitude) / (defaultAltitude - maximumZoomAltitude)
+    ));
   }
 
   function markerScale() {
@@ -1181,7 +1191,7 @@
     if (!state.selected) {
       return {
         offset: [0, width <= 760 ? Math.round(height * 0.17) : Math.round(height * 0.07)],
-        altitude: width <= 760 ? 1.42 : 1.22,
+        altitude: defaultExploreAltitude(),
         lng: 20
       };
     }
