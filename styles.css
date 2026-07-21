@@ -1163,13 +1163,13 @@ label svg {
 
 /* 搜索状态：岗位信息悬浮在地球上方 */
 .app-page .job-card {
-  top: clamp(92px, 11vh, 124px);
+  top: clamp(58px, 7vh, 78px);
   right: auto;
   bottom: auto;
   left: 50%;
-  width: min(680px, calc(100vw - 180px));
-  min-height: 250px;
-  padding: 24px 28px;
+  width: min(940px, calc(100vw - 180px));
+  min-height: 194px;
+  padding: 22px 32px;
   overflow: visible;
   border-color: rgba(23, 33, 38, 0.11);
   border-radius: 28px;
@@ -1222,7 +1222,7 @@ label svg {
 .card-switch:hover { color: var(--ink); background: #fff; transform: translateY(-50%) scale(1.08); }
 .card-switch:active { transform: translateY(-50%) scale(0.96); }
 
-.app-page .job-card-topline { padding-right: 194px; }
+.app-page .job-card-topline { padding-right: 220px; }
 .app-page .evidence-pill { margin-left: 0; }
 
 .card-position {
@@ -1233,14 +1233,14 @@ label svg {
   text-align: right;
 }
 
-.app-page .job-card-company { margin: 18px 0 5px; }
+.app-page .job-card-company { margin: 13px 0 4px; }
 
 .app-page .job-card-source { right: 62px; }
 
 .app-page .job-card h1 {
-  max-width: 92%;
+  max-width: 70%;
   overflow: hidden;
-  font-size: clamp(27px, 2.25vw, 35px);
+  font-size: clamp(25px, 2vw, 31px);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1249,13 +1249,14 @@ label svg {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 22px;
-  margin-top: 15px;
+  max-width: 68%;
+  margin-top: 10px;
 }
 
 .app-page .job-card-summary {
   display: -webkit-box;
-  max-width: 100%;
-  margin: 17px 0 0;
+  max-width: 66%;
+  margin: 12px 0 0;
   padding: 0;
   overflow: hidden;
   border: 0;
@@ -1266,9 +1267,14 @@ label svg {
 .app-page .job-card-tags { display: none; }
 
 .app-page .job-card-actions {
-  justify-content: flex-start;
-  margin-top: auto;
-  padding-top: 20px;
+  position: absolute;
+  right: 32px;
+  bottom: 28px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
 }
 
 .app-page .job-card.is-details-open {
@@ -1303,7 +1309,7 @@ label svg {
 .app-page .search-dock {
   display: flex;
   align-items: center;
-  width: min(560px, calc(100vw - 40px));
+  width: min(780px, calc(100vw - 40px));
   min-height: 60px;
   padding: 6px;
   border-radius: 999px;
@@ -1320,9 +1326,127 @@ label svg {
 .app-page .search-input-wrap input { height: 46px; font-size: 14px; }
 
 .app-page .result-sheet {
-  width: min(560px, calc(100vw - 40px));
+  width: min(780px, calc(100vw - 40px));
   max-height: min(36vh, 340px);
   border-radius: 22px;
+}
+
+.category-filter {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.category-current,
+.category-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  border: 1px solid rgba(23, 33, 38, 0.1);
+  background: rgba(255, 255, 255, 0.58);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.category-current.category-toggle {
+  gap: 9px;
+  width: auto;
+  min-width: 148px;
+  padding: 0 15px 0 17px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 620;
+  white-space: nowrap;
+}
+
+.category-current i,
+.category-option i {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--category-color, #171f22);
+}
+
+.category-toggle svg {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-left: 2px;
+  transition: transform 180ms ease;
+}
+.category-current:hover,
+.category-toggle:hover { border-color: rgba(23, 33, 38, 0.22); background: #fff; }
+.category-toggle:active { transform: scale(0.94); }
+.category-filter.is-open .category-toggle svg { transform: rotate(180deg); }
+
+.category-menu {
+  position: absolute;
+  right: 0;
+  bottom: 58px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(130px, 1fr));
+  gap: 4px;
+  width: 318px;
+  max-height: min(54vh, 480px);
+  padding: 10px;
+  overflow: auto;
+  border: 1px solid rgba(23, 33, 38, 0.11);
+  border-radius: 22px;
+  background: rgba(251, 251, 247, 0.96);
+  box-shadow: 0 24px 70px rgba(39, 49, 49, 0.16), 0 2px 8px rgba(39, 49, 49, 0.05);
+  backdrop-filter: blur(24px) saturate(114%);
+  transform-origin: right bottom;
+  animation: category-in 230ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.category-menu[hidden] { display: none; }
+
+.category-option {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) 14px;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.category-option:hover,
+.category-option:focus-visible { background: rgba(23, 33, 38, 0.05); outline: 0; }
+.category-option b { opacity: 0; color: var(--ink); font-size: 11px; }
+.category-option.is-selected { background: rgba(23, 33, 38, 0.055); color: var(--ink); font-weight: 650; }
+.category-option.is-selected b { opacity: 1; }
+
+.country-tooltip {
+  display: grid;
+  gap: 4px;
+  min-width: 132px;
+  padding: 11px 13px;
+  border: 1px solid rgba(23, 33, 38, 0.1);
+  border-radius: 14px;
+  background: rgba(252, 252, 248, 0.96);
+  box-shadow: 0 14px 38px rgba(30, 42, 42, 0.14);
+  color: var(--ink);
+  backdrop-filter: blur(16px);
+}
+
+.country-tooltip b { font-size: 12px; font-weight: 660; }
+.country-tooltip span { color: var(--ink-faint); font-size: 9px; }
+.app-page #work-globe.is-country-hovered canvas { cursor: pointer; }
+
+@keyframes category-in {
+  from { opacity: 0; transform: translateY(9px) scale(0.975); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes spotlight-in {
@@ -1377,7 +1501,14 @@ label svg {
     font-size: 11px;
     -webkit-line-clamp: 2;
   }
-  .app-page .job-card-actions { gap: 7px; margin-top: auto; padding-top: 16px; }
+  .app-page .job-card-actions {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    gap: 7px;
+    margin-top: auto;
+    padding-top: 16px;
+  }
   .app-page .job-action { min-height: 40px; padding: 0 15px; font-size: 10px; }
   .app-page .job-action-primary { min-width: 116px; }
   .app-page .job-action-secondary { min-width: 96px; }
@@ -1405,6 +1536,19 @@ label svg {
   .app-page .search-input-wrap input { height: 44px; padding: 0 8px; font-size: 12px; }
   .app-page .search-count { display: none; }
   .app-page .result-sheet { width: 100%; max-width: none; max-height: 32vh; }
+  .category-current.category-toggle {
+    width: auto;
+    min-width: 126px;
+    min-height: 44px;
+    padding: 0 12px;
+    font-size: 10px;
+  }
+  .category-menu {
+    right: 0;
+    bottom: 56px;
+    width: min(340px, calc(100vw - 20px));
+    max-height: min(52vh, 430px);
+  }
   .app-page .reset-view { top: 384px; }
 }
 

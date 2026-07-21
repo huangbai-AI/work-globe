@@ -1,0 +1,16 @@
+{
+  "name": "openwork-globe",
+  "private": true,
+  "version": "1.0.0",
+  "description": "OpenWork globe job explorer",
+  "scripts": {
+    "test:smoke": "node tests/smoke.mjs"
+  },
+  "dependencies": {
+    "globe.gl": "2.46.1",
+    "three": "0.149.0"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}

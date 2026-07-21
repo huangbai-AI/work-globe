@@ -12,7 +12,16 @@
   const params = xhsMode ? new URLSearchParams() : new URLSearchParams(window.location.search);
   const initialExplore = params.get("view") === "explore"
     || params.has("q")
-    || params.has("job");
+    || params.has("job")
+    || params.has("category");
+  const countryPalette = [
+    "#D7A29B", "#A9BDA9", "#AABBD3", "#D8BD84", "#B8A9C9",
+    "#C69B82", "#8FB7B1", "#C1B9A6", "#9FAFCA", "#C9AAB4"
+  ];
+  const countryMaterials = new Map();
+  const regionNames = typeof Intl.DisplayNames === "function"
+    ? new Intl.DisplayNames(["zh-CN"], { type: "region" })
+    : null;
 
   function spreadSharedLocations(list) {
     const groups = new Map();
@@ -43,9 +52,20 @@
   const state = {
     globe: null,
     query: params.get("q") || "",
+    category: params.get("category") || "全部",
+    categoryOpen: false,
     selected: null,
+    selectionPool: [],
+    selectionType: null,
+    selectionLabel: "",
+    selectedCountryKey: null,
     hovered: null,
     featured: null,
+    countries: [],
+    markers: [],
+    markerRefreshTimer: 0,
+    markerObjects: new Set(),
+    rotationResumeTimer: 0,
     ready: false,
     resultsOpen: false,
     autoRotate: !reducedMotion,
@@ -71,6 +91,10 @@
     form: $("#search-form"),
     search: $("#job-search"),
     count: $("#search-count"),
+    categoryFilter: $("#category-filter"),
+    categoryCurrent: $("#category-toggle"),
+    categoryToggle: $("#category-toggle"),
+    categoryMenu: $("#category-menu"),
     sheet: $("#result-sheet"),
     resultLabel: $("#result-label"),
     resultList: $("#result-list"),
@@ -115,6 +139,7 @@
   }
 
   function matches(job) {
+    if (state.category !== "全部" && job.category !== state.category) return false;
     const query = normalize(state.query);
     if (!query) return true;
     const haystack = normalize([
@@ -138,32 +163,47 @@
     return Boolean(state.query.trim());
   }
 
+  function activeFilter() {
+    return activeSearch() || state.category !== "全部";
+  }
+
   function matchingJobs() {
     return jobs.filter(matches).sort((a, b) => (b.attention || 0) - (a.attention || 0));
   }
 
   function pointRadius(job) {
-    const base = 0.16 + Math.min(0.64, Math.log10((job.attention || 0) + 10) * 0.14);
+    const base = isTouch ? 0.34 : 0.29;
     const hoverScale = state.hovered?.id === job.id ? 1.55 : 1;
-    if (!activeSearch()) return base * hoverScale;
-    return (matches(job) ? base * 1.24 : Math.max(0.08, base * 0.42)) * hoverScale;
+    return base * hoverScale;
   }
 
   function pointColor(job) {
     const color = colorFor(job);
     if (state.hovered?.id === job.id) return hexToRgba(color, 1);
-    if (!activeSearch()) return hexToRgba(color, job.remote ? 0.7 : 0.84);
-    return matches(job) ? hexToRgba(color, 0.96) : "rgba(80, 92, 94, 0.075)";
+    return hexToRgba(color, 0.96);
   }
 
   function pointAltitude(job) {
-    const base = job.remote ? 0.007 : 0.003;
+    const base = 0.006;
     const hoverLift = state.hovered?.id === job.id ? 0.008 : 0;
-    return (activeSearch() && matches(job) ? base + 0.004 : base) + hoverLift;
+    return base + hoverLift;
   }
 
-  function tooltip(job) {
-    if (!job) return "";
+  function tooltip(marker) {
+    if (!marker) return "";
+    if (marker.isCluster) {
+      const first = marker.jobs[0];
+      return `<div class="map-tooltip" style="--tooltip-color:${marker.color}">
+        <div class="map-tooltip-head">
+          <span><i aria-hidden="true"></i>重叠岗位合集</span>
+          <em>${marker.jobs.length} 个岗位</em>
+        </div>
+        <b>${escapeHtml(first.mapCity || first.location || "这个地区")}</b>
+        <p>${escapeHtml([...new Set(marker.jobs.map((job) => job.category))].slice(0, 3).join(" · "))}</p>
+        <small>点击圆钉，使用上方箭头逐个查看</small>
+      </div>`;
+    }
+    const job = marker.job || marker;
     const pointKind = job.mapBasis === "company-hq" ? "公司总部" : "职位城市";
     return `<div class="map-tooltip" style="--tooltip-color:${colorFor(job)}">
       <div class="map-tooltip-head">
@@ -176,25 +216,25 @@
         <span>${escapeHtml(job.mapCity || job.location)}</span>
         <span>${escapeHtml(job.salary || "薪资面议")}</span>
       </div>
-      <small>点击光点查看完整职位</small>
+      <small>点击圆钉查看完整职位</small>
     </div>`;
   }
 
   function hoverJob(job) {
-    if ((state.hovered?.id || null) === (job?.id || null)) return;
-    state.hovered = job || null;
+    const next = job?.job || job || null;
+    if ((state.hovered?.id || null) === (next?.id || null)) return;
+    state.hovered = next;
     if (!state.globe) return;
-    state.globe
-      .pointRadius(pointRadius)
-      .pointColor(pointColor)
-      .pointAltitude(pointAltitude);
+    refreshMarkerScales();
   }
 
   function renderResults() {
     const result = matchingJobs();
     const visible = result.slice(0, 8);
-    els.count.textContent = activeSearch() ? `${result.length} 个` : "";
-    els.resultLabel.textContent = activeSearch() ? `找到 ${result.length} 个岗位` : "本月值得看看";
+    els.count.textContent = activeFilter() ? `${result.length} 个` : "";
+    els.resultLabel.textContent = activeFilter()
+      ? `${state.category === "全部" ? "全部类型" : state.category} · ${result.length} 个岗位`
+      : "本月值得看看";
     els.resultEmpty.hidden = result.length > 0;
     els.resultList.innerHTML = visible.map((job) => `
       <button class="result-item" type="button" data-job-id="${escapeHtml(job.id)}">
@@ -210,6 +250,41 @@
         closeResults();
       });
     });
+  }
+
+  function renderCategoryMenu() {
+    const options = ["全部", ...Object.keys(categories)];
+    els.categoryMenu.innerHTML = options.map((name) => {
+      const selected = state.category === name;
+      const label = name === "全部" ? "全部类型" : name;
+      const color = name === "全部" ? "#171f22" : categories[name].color;
+      return `<button class="category-option${selected ? " is-selected" : ""}" type="button" role="option" aria-selected="${selected}" data-category="${escapeHtml(name)}" style="--category-color:${color}">
+        <i aria-hidden="true"></i><span>${escapeHtml(label)}</span><b aria-hidden="true">✓</b>
+      </button>`;
+    }).join("");
+    const currentLabel = state.category === "全部" ? "全部类型" : state.category;
+    const currentColor = state.category === "全部" ? "#171f22" : categories[state.category]?.color;
+    $("span", els.categoryCurrent).textContent = currentLabel;
+    $("i", els.categoryCurrent).style.background = currentColor || "#171f22";
+    els.categoryToggle.setAttribute("aria-label", `工作类型：${currentLabel}，点击展开`);
+  }
+
+  function setCategoryMenu(open) {
+    state.categoryOpen = open;
+    els.categoryMenu.hidden = !open;
+    els.categoryToggle.setAttribute("aria-expanded", String(open));
+    els.categoryToggle.setAttribute("aria-label", open ? "收起工作类型" : "展开工作类型");
+    els.categoryFilter.classList.toggle("is-open", open);
+  }
+
+  function selectCategory(name) {
+    state.category = name === "全部" || categories[name] ? name : "全部";
+    renderCategoryMenu();
+    setCategoryMenu(false);
+    renderResults();
+    refreshGlobePoints();
+    if (state.selected && !matches(state.selected)) clearSelection(false);
+    syncUrl();
   }
 
   function openResults() {
@@ -229,6 +304,7 @@
     if (state.view === "explore") {
       next.set("view", "explore");
       if (state.query.trim()) next.set("q", state.query.trim());
+      if (state.category !== "全部") next.set("category", state.category);
       if (state.selected) next.set("job", state.selected.id);
     }
     const suffix = next.toString() ? `${window.location.pathname}?${next}` : window.location.pathname;
@@ -237,11 +313,7 @@
 
   function refreshGlobePoints() {
     if (!state.globe) return;
-    state.globe
-      .pointRadius(pointRadius)
-      .pointColor(pointColor)
-      .pointAltitude(pointAltitude)
-      .pointsData([...mapJobs]);
+    refreshMarkers();
   }
 
   function updateSearchState(shouldOpen) {
@@ -289,10 +361,13 @@
     const changed = state.featured?.id !== job.id;
     state.featured = job;
     els.card.hidden = false;
+    els.card.dataset.selectionType = state.selectionType || "job";
     els.card.style.setProperty("--job-color", colorFor(job));
     els.cardSource.textContent = job.source;
-    els.cardPosted.textContent = job.posted;
-    els.cardEvidence.textContent = job.evidence;
+    els.cardPosted.textContent = state.selectionLabel || job.posted;
+    els.cardEvidence.textContent = state.selectionType === "country"
+      ? "国家岗位"
+      : state.selectionType === "cluster" ? "附近合集" : job.evidence;
     els.cardCompany.textContent = job.company;
     els.cardTitle.textContent = job.title;
     els.cardLocation.textContent = job.location;
@@ -300,7 +375,7 @@
     els.cardSummary.textContent = job.summary;
     els.cardTags.innerHTML = (job.tags || []).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
     configureApplyLink(job);
-    const pool = matchingJobs();
+    const pool = state.selectionPool.length ? state.selectionPool : matchingJobs();
     const position = Math.max(0, pool.findIndex((item) => item.id === job.id));
     els.cardPosition.textContent = `${String(position + 1).padStart(2, "0")} / ${String(pool.length).padStart(2, "0")}`;
     if (changed) {
@@ -316,15 +391,25 @@
 
   function cycleFeatured(direction) {
     if (!state.selected) return;
-    const pool = matchingJobs();
+    const pool = state.selectionPool.length ? state.selectionPool : matchingJobs();
     if (!pool.length) return;
     const currentIndex = Math.max(0, pool.findIndex((job) => job.id === state.featured?.id));
     const nextIndex = (currentIndex + direction + pool.length) % pool.length;
-    selectJob(pool[nextIndex]);
+    selectJob(pool[nextIndex], {
+      pool,
+      type: state.selectionType,
+      label: state.selectionLabel,
+      countryKey: state.selectedCountryKey
+    });
   }
 
-  function selectJob(job) {
+  function selectJob(job, options = {}) {
+    const pool = options.pool?.length ? options.pool : matchingJobs();
     state.selected = job;
+    state.selectionPool = pool;
+    state.selectionType = options.type || "job";
+    state.selectionLabel = options.label || "";
+    state.selectedCountryKey = options.countryKey || null;
     renderCard(job);
     const hasCityPoint = job.mapPrecision === "city" && Number.isFinite(job.mapLat) && Number.isFinite(job.mapLng);
     const layout = viewLayout("explore");
@@ -337,17 +422,57 @@
     } else {
       state.globe?.ringsData([]);
     }
-    if (state.globe && !reducedMotion) {
-      state.autoRotate = true;
-      state.globe.controls().autoRotate = true;
-    }
+    stopAutoRotation();
+    scheduleAutoRotation(2600);
     syncUrl();
   }
 
-  function selectPointJob(job, event) {
+  function selectPointJob(marker, event) {
     state.lastPointClickAt = performance.now();
     event?.stopPropagation?.();
-    selectJob(job);
+    if (!marker) return;
+    const pool = marker.isCluster ? marker.jobs : [marker.job || marker];
+    const job = pool[0];
+    selectJob(job, {
+      pool,
+      type: marker.isCluster ? "cluster" : "job",
+      label: marker.isCluster ? `${job.mapCity || job.location} · ${pool.length} 个岗位` : ""
+    });
+  }
+
+  function countryName(feature) {
+    const iso2 = String(feature.properties?.ISO_A2 || feature.properties?.iso_a2 || "").toUpperCase();
+    if (regionNames && iso2 && iso2 !== "-99") {
+      try { return regionNames.of(iso2); } catch (_) { /* 使用数据名称兜底。 */ }
+    }
+    return feature.properties?.NAME_ZH
+      || feature.properties?.ADMIN
+      || feature.properties?.NAME
+      || "这个国家";
+  }
+
+  function selectCountry(feature, event) {
+    state.lastPointClickAt = performance.now();
+    event?.stopPropagation?.();
+    const pool = (feature._jobs || []).filter(matches)
+      .sort((a, b) => (b.attention || 0) - (a.attention || 0));
+    state.selectedCountryKey = feature._countryKey;
+    refreshCountryStyles();
+    if (!pool.length) {
+      clearSelection(false, true);
+      els.resultLabel.textContent = `${countryName(feature)} · 暂无匹配岗位`;
+      els.resultEmpty.hidden = false;
+      els.resultList.innerHTML = "";
+      els.sheet.hidden = false;
+      state.resultsOpen = true;
+      return;
+    }
+    selectJob(pool[0], {
+      pool,
+      type: "country",
+      label: `${countryName(feature)} · ${pool.length} 个岗位`,
+      countryKey: feature._countryKey
+    });
   }
 
   function clearFromGlobe() {
@@ -355,13 +480,18 @@
     clearSelection();
   }
 
-  function clearSelection(sync = true) {
+  function clearSelection(sync = true, keepCountry = false) {
     const hadSelection = Boolean(state.selected);
     state.selected = null;
+    state.selectionPool = [];
+    state.selectionType = null;
+    state.selectionLabel = "";
+    if (!keepCountry) state.selectedCountryKey = null;
     state.featured = null;
     els.card.hidden = true;
     setCardDetails(false);
     state.globe?.ringsData([]);
+    refreshCountryStyles();
     if (hadSelection && state.view === "explore" && state.globe) {
       const layout = viewLayout("explore");
       const current = state.globe.pointOfView();
@@ -380,35 +510,463 @@
     clearSelection(false);
     if (state.globe) {
       state.globe.pointOfView({ lat: 20, lng: 20, altitude: viewLayout("explore").altitude }, reducedMotion ? 0 : 720);
-      if (!reducedMotion) {
-        state.autoRotate = true;
-        state.globe.controls().autoRotate = true;
-      }
+      stopAutoRotation();
+      scheduleAutoRotation(2400);
     }
     syncUrl();
   }
 
+  function countryKey(feature, index = 0) {
+    return String(feature.properties?.ISO_A3
+      || feature.properties?.ADM0_A3
+      || feature.properties?.ADMIN
+      || feature.id
+      || `country-${index}`);
+  }
+
+  function coordinateArea(ring) {
+    let area = 0;
+    for (let index = 0; index < ring.length - 1; index += 1) {
+      area += ring[index][0] * ring[index + 1][1] - ring[index + 1][0] * ring[index][1];
+    }
+    return Math.abs(area / 2);
+  }
+
+  function squareSegmentDistance(point, start, end) {
+    let x = start[0];
+    let y = start[1];
+    let dx = end[0] - x;
+    let dy = end[1] - y;
+    if (dx || dy) {
+      const ratio = ((point[0] - x) * dx + (point[1] - y) * dy) / (dx * dx + dy * dy);
+      if (ratio > 1) {
+        x = end[0];
+        y = end[1];
+      } else if (ratio > 0) {
+        x += dx * ratio;
+        y += dy * ratio;
+      }
+      dx = point[0] - x;
+      dy = point[1] - y;
+    } else {
+      dx = point[0] - x;
+      dy = point[1] - y;
+    }
+    return dx * dx + dy * dy;
+  }
+
+  function simplifyLine(points, tolerance) {
+    if (points.length <= 2) return points;
+    const squareTolerance = tolerance * tolerance;
+    const markers = new Uint8Array(points.length);
+    const stack = [[0, points.length - 1]];
+    markers[0] = 1;
+    markers[points.length - 1] = 1;
+    while (stack.length) {
+      const [first, last] = stack.pop();
+      let maxDistance = squareTolerance;
+      let farthest = 0;
+      for (let index = first + 1; index < last; index += 1) {
+        const distance = squareSegmentDistance(points[index], points[first], points[last]);
+        if (distance > maxDistance) {
+          farthest = index;
+          maxDistance = distance;
+        }
+      }
+      if (farthest) {
+        markers[farthest] = 1;
+        if (farthest - first > 1) stack.push([first, farthest]);
+        if (last - farthest > 1) stack.push([farthest, last]);
+      }
+    }
+    return points.filter((_, index) => markers[index]);
+  }
+
+  function simplifyRing(ring) {
+    if (!Array.isArray(ring) || ring.length < 4) return ring;
+    const open = ring.slice(0, -1);
+    const lngs = open.map((point) => point[0]);
+    const lats = open.map((point) => point[1]);
+    const span = Math.max(Math.max(...lngs) - Math.min(...lngs), Math.max(...lats) - Math.min(...lats));
+    const target = span > 45 ? 34 : span > 18 ? 26 : span > 7 ? 18 : 12;
+    let tolerance = span > 45 ? 0.9 : span > 18 ? 0.55 : span > 7 ? 0.3 : 0.16;
+    let simplified = open;
+    do {
+      simplified = simplifyLine(open, tolerance);
+      tolerance *= 1.28;
+    } while (simplified.length > target && tolerance < 8);
+    if (simplified.length < 3) simplified = open.slice(0, 3);
+    return [...simplified, simplified[0]];
+  }
+
+  function polygonShellArea(polygon) {
+    return Array.isArray(polygon?.[0]) ? coordinateArea(polygon[0]) : 0;
+  }
+
+  function simplifyGeometry(geometry) {
+    if (!geometry) return geometry;
+    if (geometry.type === "Polygon") {
+      return { type: "Polygon", coordinates: [geometry.coordinates[0]] };
+    }
+    if (geometry.type === "MultiPolygon") {
+      const ordered = geometry.coordinates
+        .map((polygon) => ({ polygon, area: polygonShellArea(polygon) }))
+        .sort((a, b) => b.area - a.area);
+      const largest = ordered[0]?.area || 0;
+      const kept = ordered
+        .filter((entry, index) => index === 0 || (index < 5 && entry.area >= Math.max(0.35, largest * 0.035)))
+        .map((entry) => [entry.polygon[0]]);
+      return { type: "MultiPolygon", coordinates: kept };
+    }
+    return geometry;
+  }
+
+  function geometryRings(geometry) {
+    if (!geometry) return [];
+    if (geometry.type === "Polygon") return geometry.coordinates;
+    if (geometry.type === "MultiPolygon") return geometry.coordinates.flat();
+    return [];
+  }
+
+  function featureBounds(feature) {
+    const points = geometryRings(feature.geometry).flat();
+    if (!points.length) return null;
+    return points.reduce((bounds, point) => ({
+      minLng: Math.min(bounds.minLng, point[0]),
+      maxLng: Math.max(bounds.maxLng, point[0]),
+      minLat: Math.min(bounds.minLat, point[1]),
+      maxLat: Math.max(bounds.maxLat, point[1])
+    }), { minLng: 180, maxLng: -180, minLat: 90, maxLat: -90 });
+  }
+
+  function pointInRing(lng, lat, ring) {
+    let inside = false;
+    for (let current = 0, previous = ring.length - 1; current < ring.length; previous = current, current += 1) {
+      let currentLng = ring[current][0];
+      let previousLng = ring[previous][0];
+      while (currentLng - lng > 180) currentLng -= 360;
+      while (currentLng - lng < -180) currentLng += 360;
+      while (previousLng - lng > 180) previousLng -= 360;
+      while (previousLng - lng < -180) previousLng += 360;
+      const currentLat = ring[current][1];
+      const previousLat = ring[previous][1];
+      const intersects = ((currentLat > lat) !== (previousLat > lat))
+        && (lng < ((previousLng - currentLng) * (lat - currentLat)) / (previousLat - currentLat || 1e-9) + currentLng);
+      if (intersects) inside = !inside;
+    }
+    return inside;
+  }
+
+  function pointInGeometry(lng, lat, geometry) {
+    const polygons = geometry?.type === "Polygon" ? [geometry.coordinates] : geometry?.coordinates || [];
+    return polygons.some((polygon) => {
+      if (!pointInRing(lng, lat, polygon[0])) return false;
+      return !polygon.slice(1).some((hole) => pointInRing(lng, lat, hole));
+    });
+  }
+
+  function colorCountries(features) {
+    const tokenOwners = new Map();
+    features.forEach((feature, featureIndex) => {
+      feature._neighbors = new Set();
+      geometryRings(feature._sourceGeometry || feature.geometry).forEach((ring) => {
+        ring.forEach(([lng, lat]) => {
+          const token = `${Math.round(lng * 5) / 5}|${Math.round(lat * 5) / 5}`;
+          if (!tokenOwners.has(token)) tokenOwners.set(token, []);
+          tokenOwners.get(token).push(featureIndex);
+        });
+      });
+    });
+    tokenOwners.forEach((owners) => {
+      const unique = [...new Set(owners)];
+      unique.forEach((owner) => unique.forEach((neighbor) => {
+        if (owner !== neighbor) features[owner]._neighbors.add(neighbor);
+      }));
+    });
+    [...features.keys()]
+      .sort((a, b) => features[b]._neighbors.size - features[a]._neighbors.size)
+      .forEach((featureIndex) => {
+        const used = new Set([...features[featureIndex]._neighbors]
+          .map((neighbor) => features[neighbor]._paletteIndex)
+          .filter(Number.isInteger));
+        features[featureIndex]._paletteIndex = countryPalette.findIndex((_, index) => !used.has(index));
+        if (features[featureIndex]._paletteIndex < 0) features[featureIndex]._paletteIndex = featureIndex % countryPalette.length;
+      });
+  }
+
+  function prepareLand(sourceFeatures) {
+    const prepared = sourceFeatures.map((feature, index) => ({
+      ...feature,
+      geometry: simplifyGeometry(feature.geometry),
+      _sourceGeometry: feature.geometry,
+      _countryKey: countryKey(feature, index),
+      _jobs: []
+    }));
+    prepared.forEach((feature) => { feature._bounds = featureBounds({ geometry: feature._sourceGeometry }); });
+    mapJobs.forEach((job) => {
+      const owner = prepared.find((feature) => {
+        const bounds = feature._bounds;
+        if (!bounds) return false;
+        const inBounds = bounds.maxLng - bounds.minLng > 350
+          ? job.lat >= bounds.minLat && job.lat <= bounds.maxLat
+          : job.lng >= bounds.minLng && job.lng <= bounds.maxLng && job.lat >= bounds.minLat && job.lat <= bounds.maxLat;
+        return inBounds && pointInGeometry(job.lng, job.lat, feature._sourceGeometry);
+      });
+      if (owner) {
+        owner._jobs.push(job);
+        job.countryKey = owner._countryKey;
+      }
+    });
+    colorCountries(prepared);
+    state.countries = prepared;
+    return prepared;
+  }
+
   function landColor(feature) {
-    const palette = ["#e0ded5", "#e6e1d9", "#dadfd9", "#e6ded8", "#d9dedd", "#e2e0d7"];
-    const name = String(feature.properties?.ISO_A3 || feature.properties?.ADMIN || "land");
-    const index = [...name].reduce((sum, char) => sum + char.charCodeAt(0), 0) % palette.length;
-    return palette[index];
+    return countryPalette[feature._paletteIndex % countryPalette.length] || countryPalette[0];
+  }
+
+  function landMaterial(feature) {
+    const color = landColor(feature);
+    if (!window.THREE) return null;
+    if (!countryMaterials.has(color)) {
+      countryMaterials.set(color, new window.THREE.MeshBasicMaterial({
+        color,
+        side: window.THREE.DoubleSide
+      }));
+    }
+    return countryMaterials.get(color);
+  }
+
+  function countryAltitude(feature) {
+    return feature._countryKey === state.selectedCountryKey ? 0.004 : 0.002;
+  }
+
+  function countrySideColor(feature) {
+    return feature._countryKey === state.selectedCountryKey
+      ? "rgba(70, 78, 78, 0.2)"
+      : "rgba(82, 91, 91, 0.11)";
+  }
+
+  function countryLabel(feature) {
+    const count = (feature._jobs || []).filter(matches).length;
+    return `<div class="country-tooltip"><b>${escapeHtml(countryName(feature))}</b><span>${count ? `${count} 个岗位 · 点击查看` : "暂无匹配岗位"}</span></div>`;
+  }
+
+  function refreshCountryStyles() {
+    if (!state.globe || !state.countries.length) return;
+    state.globe
+      .polygonAltitude(countryAltitude)
+      .polygonCapColor(landColor)
+      .polygonCapMaterial(landMaterial)
+      .polygonSideColor(countrySideColor)
+      .polygonStrokeColor(() => "rgba(255,255,255,0.96)");
+  }
+
+  function enablePlateShadows() {
+    if (!state.globe) return;
+    const renderer = state.globe.renderer?.();
+    if (renderer?.shadowMap) {
+      renderer.shadowMap.enabled = true;
+      if (window.THREE?.PCFShadowMap) renderer.shadowMap.type = window.THREE.PCFShadowMap;
+    }
+    state.globe.lights?.().forEach((light) => {
+      if (!light.isDirectionalLight) return;
+      light.castShadow = true;
+      light.shadow.bias = -0.0004;
+      light.shadow.mapSize.set(1024, 1024);
+      light.shadow.camera.near = 50;
+      light.shadow.camera.far = 420;
+    });
+    state.globe.scene?.().traverse((object) => {
+      if (!object.isMesh) return;
+      object.castShadow = true;
+      object.receiveShadow = true;
+    });
   }
 
   async function loadLand() {
     if (Array.isArray(window.WORLD_COUNTRIES)) {
-      state.globe?.polygonsData(window.WORLD_COUNTRIES);
+      state.globe?.polygonsData(prepareLand(window.WORLD_COUNTRIES));
+      refreshCountryStyles();
+      window.setTimeout(enablePlateShadows, reducedMotion ? 0 : 620);
       return;
     }
     if (xhsMode) return;
     try {
-      const response = await fetch("https://cdn.jsdelivr.net/gh/vasturiano/globe.gl@master/example/datasets/ne_110m_admin_0_countries.geojson");
+      const response = await fetch("node_modules/globe.gl/example/datasets/ne_110m_admin_0_countries.geojson");
       if (!response.ok) throw new Error(String(response.status));
       const world = await response.json();
-      state.globe?.polygonsData(world.features || []);
+      state.globe?.polygonsData(prepareLand(world.features || []));
+      refreshCountryStyles();
+      window.setTimeout(enablePlateShadows, reducedMotion ? 0 : 620);
     } catch (_) {
       // 边界加载失败不影响工作点与搜索。
     }
+  }
+
+  function zoomProgress() {
+    const altitude = state.globe?.pointOfView()?.altitude ?? 1.4;
+    const distance = 100 * (1 + altitude);
+    return Math.max(0, Math.min(1, (320 - distance) / (320 - 108)));
+  }
+
+  function markerScale() {
+    const altitude = state.globe?.pointOfView()?.altitude ?? 1.4;
+    return Math.max(0.58, Math.min(1.18, (altitude + 1) / 2.2));
+  }
+
+  function geographicDistance(first, second) {
+    const radius = 6371;
+    const lat1 = first.lat * Math.PI / 180;
+    const lat2 = second.lat * Math.PI / 180;
+    const latDelta = (second.lat - first.lat) * Math.PI / 180;
+    const lngDelta = (second.lng - first.lng) * Math.PI / 180;
+    const value = Math.sin(latDelta / 2) ** 2
+      + Math.cos(lat1) * Math.cos(lat2) * Math.sin(lngDelta / 2) ** 2;
+    return radius * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
+  }
+
+  function clusterPosition(group) {
+    const lat = group.reduce((sum, job) => sum + job.lat, 0) / group.length;
+    const vectors = group.map((job) => job.lng * Math.PI / 180);
+    const lng = Math.atan2(
+      vectors.reduce((sum, value) => sum + Math.sin(value), 0),
+      vectors.reduce((sum, value) => sum + Math.cos(value), 0)
+    ) * 180 / Math.PI;
+    return { lat, lng };
+  }
+
+  function buildMarkers(list) {
+    if (zoomProgress() >= 0.5) {
+      return list.map((job) => ({
+        id: `job-${job.id}`,
+        job,
+        jobs: [job],
+        isCluster: false,
+        mapLat: job.mapLat,
+        mapLng: job.mapLng,
+        color: colorFor(job)
+      }));
+    }
+    const thresholdKm = (isTouch ? 44 : 36) + (1 - zoomProgress()) * (isTouch ? 58 : 48);
+    const groups = [];
+    list.forEach((job) => {
+      const nearby = groups.find((group) => geographicDistance(
+        { lat: job.lat, lng: job.lng },
+        group.center
+      ) <= thresholdKm);
+      if (nearby) {
+        nearby.jobs.push(job);
+        nearby.center = clusterPosition(nearby.jobs);
+      } else {
+        groups.push({ jobs: [job], center: { lat: job.lat, lng: job.lng } });
+      }
+    });
+    return groups.map((group) => {
+      if (group.jobs.length === 1) {
+        const job = group.jobs[0];
+        return {
+          id: `job-${job.id}`,
+          job,
+          jobs: [job],
+          isCluster: false,
+          mapLat: job.mapLat,
+          mapLng: job.mapLng,
+          color: colorFor(job)
+        };
+      }
+      const ordered = [...group.jobs].sort((a, b) => (b.attention || 0) - (a.attention || 0));
+      return {
+        id: `cluster-${ordered.map((job) => job.id).sort().join("-")}`,
+        jobs: ordered,
+        isCluster: true,
+        mapLat: group.center.lat,
+        mapLng: group.center.lng,
+        color: colorFor(ordered[0])
+      };
+    });
+  }
+
+  function markerObject(marker) {
+    if (!window.THREE) return null;
+    const group = new window.THREE.Group();
+    const clustered = marker.isCluster;
+    const headRadius = clustered
+      ? Math.min(2.2, 1.62 + Math.log10(marker.jobs.length + 1) * 0.3)
+      : 1.34;
+    const headPosition = new window.THREE.Vector3(
+      0,
+      headRadius * (clustered ? 1.42 : 1.55),
+      headRadius * (clustered ? 0.68 : 0.72)
+    );
+    const stemDirection = headPosition.clone().normalize();
+    const stemLength = Math.max(0.72, headPosition.length() - headRadius * 0.76);
+    const stem = new window.THREE.Mesh(
+      new window.THREE.CylinderGeometry(clustered ? 0.13 : 0.1, clustered ? 0.13 : 0.1, stemLength, 8),
+      new window.THREE.MeshBasicMaterial({ color: "#5C6465" })
+    );
+    stem.quaternion.setFromUnitVectors(new window.THREE.Vector3(0, 1, 0), stemDirection);
+    stem.position.copy(stemDirection).multiplyScalar(stemLength / 2);
+    group.add(stem);
+
+    const head = new window.THREE.Mesh(
+      new window.THREE.SphereGeometry(headRadius, 20, 14),
+      new window.THREE.MeshBasicMaterial({ color: marker.color })
+    );
+    head.position.copy(headPosition);
+    group.add(head);
+
+    const hitTarget = new window.THREE.Mesh(
+      new window.THREE.SphereGeometry(headRadius * (isTouch ? 1.42 : 1.2), 12, 8),
+      new window.THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
+    );
+    hitTarget.position.copy(head.position);
+    group.add(hitTarget);
+
+    marker._threeObject = group;
+    state.markerObjects.add(group);
+    return group;
+  }
+
+  function refreshMarkerScales() {
+    const viewScale = markerScale();
+    state.markers.forEach((marker) => {
+      if (!marker._threeObject) return;
+      const hovered = marker.jobs.some((job) => job.id === state.hovered?.id);
+      const scale = viewScale * (hovered ? 1.16 : 1);
+      marker._threeObject.scale.setScalar(scale);
+    });
+  }
+
+  function refreshMarkers() {
+    if (!state.globe) return;
+    const visibleJobs = mapJobs.filter(matches);
+    const markers = buildMarkers(visibleJobs);
+    state.markers = markers;
+    state.markerObjects.clear();
+    if (window.THREE && typeof state.globe.objectsData === "function") {
+      state.globe
+        .pointsData([])
+        .objectsData(markers);
+      window.requestAnimationFrame(refreshMarkerScales);
+    } else {
+      state.globe
+        .objectsData?.([])
+        .pointsData(markers)
+        .pointLat("mapLat")
+        .pointLng("mapLng")
+        .pointAltitude(() => 0.008)
+        .pointRadius((marker) => marker.isCluster ? 0.52 : 0.32)
+        .pointColor((marker) => marker.color)
+        .pointLabel(tooltip);
+    }
+  }
+
+  function scheduleMarkerRefresh() {
+    window.clearTimeout(state.markerRefreshTimer);
+    state.markerRefreshTimer = window.setTimeout(refreshMarkers, 110);
+    refreshMarkerScales();
   }
 
   function hideLoading() {
@@ -460,9 +1018,9 @@
     return {
       offset: [
         0,
-        width <= 760 ? Math.round(height * 0.31) : Math.round(height * 0.36)
+        width <= 760 ? Math.round(height * 0.31) : Math.round(height * 0.34)
       ],
-      altitude: width <= 760 ? 1.82 : 1.72,
+      altitude: width <= 760 ? 1.82 : 0.92,
       lng: 20
     };
   }
@@ -502,6 +1060,25 @@
     state.globe.pointOfView({ lat: 20, lng: layout.lng, altitude: layout.altitude }, duration);
   }
 
+  function stopAutoRotation() {
+    window.clearTimeout(state.rotationResumeTimer);
+    state.rotationResumeTimer = 0;
+    state.autoRotate = false;
+    if (state.globe) state.globe.controls().autoRotate = false;
+  }
+
+  function scheduleAutoRotation(delay = 1800) {
+    window.clearTimeout(state.rotationResumeTimer);
+    state.rotationResumeTimer = 0;
+    if (reducedMotion || state.view !== "explore" || !state.globe) return;
+    state.rotationResumeTimer = window.setTimeout(() => {
+      if (state.view !== "explore" || !state.globe) return;
+      state.autoRotate = true;
+      state.globe.controls().autoRotate = true;
+      state.rotationResumeTimer = 0;
+    }, delay);
+  }
+
   function setGlobeInteraction(view) {
     if (!state.globe) return;
     const controls = state.globe.controls();
@@ -509,8 +1086,15 @@
     controls.enableZoom = exploring;
     controls.enableRotate = exploring;
     controls.enablePan = false;
-    state.autoRotate = !reducedMotion;
-    controls.autoRotate = state.autoRotate;
+    if (exploring) {
+      stopAutoRotation();
+      scheduleAutoRotation(1400);
+    } else {
+      window.clearTimeout(state.rotationResumeTimer);
+      state.rotationResumeTimer = 0;
+      state.autoRotate = !reducedMotion;
+      controls.autoRotate = state.autoRotate;
+    }
   }
 
   function setView(view, options = {}) {
@@ -592,12 +1176,14 @@
         .atmosphereAltitude(0.13)
         .showGraticules(false)
         .polygonsData([])
-        .polygonAltitude(0.006)
+        .polygonAltitude(countryAltitude)
         .polygonCapColor(landColor)
-        .polygonSideColor(() => "rgba(168, 182, 179, 0.22)")
-        .polygonStrokeColor(() => "rgba(255,255,255,0.74)")
+        .polygonCapMaterial(landMaterial)
+        .polygonSideColor(countrySideColor)
+        .polygonStrokeColor(() => "rgba(255,255,255,0.96)")
+        .polygonLabel(countryLabel)
         .polygonsTransitionDuration(reducedMotion ? 0 : 520)
-        .pointsData(mapJobs)
+        .pointsData([])
         .pointLat("mapLat")
         .pointLng("mapLng")
         .pointAltitude(pointAltitude)
@@ -611,17 +1197,30 @@
         .ringMaxRadius(2.8)
         .ringPropagationSpeed(reducedMotion ? 0 : 1)
         .ringRepeatPeriod(reducedMotion ? 0 : 1300)
+        .objectsData([])
+        .objectLat("mapLat")
+        .objectLng("mapLng")
+        .objectAltitude(() => 0.004)
+        .objectFacesSurface(true)
+        .objectThreeObject(markerObject)
+        .objectLabel(tooltip)
+        .onObjectHover(hoverJob)
+        .onObjectClick(selectPointJob)
         .onPointHover(hoverJob)
         .onPointClick(selectPointJob)
+        .onPolygonHover((feature) => els.globe.classList.toggle("is-country-hovered", Boolean(feature)))
+        .onPolygonClick(selectCountry)
         .onGlobeClick(clearFromGlobe)
         .onGlobeReady(hideLoading);
 
       const material = state.globe.globeMaterial();
       if (material) {
-        material.color.set("#c8d6d7");
-        material.emissive.set("#edf2ef");
-        material.emissiveIntensity = 0.24;
-        material.shininess = 3;
+        material.color.set("#AFC9D1");
+        material.emissive.set("#DCE8E7");
+        material.emissiveIntensity = 0.2;
+        if (material.specular) material.specular.set("#F3FAFA");
+        material.shininess = 8;
+        material.needsUpdate = true;
       }
 
       const controls = state.globe.controls();
@@ -629,13 +1228,20 @@
       controls.enableDamping = true;
       controls.dampingFactor = 0.065;
       controls.minDistance = 108;
-      controls.maxDistance = 370;
+      controls.maxDistance = 320;
+      controls.addEventListener("start", stopAutoRotation);
+      controls.addEventListener("change", refreshMarkerScales);
+      controls.addEventListener("end", () => {
+        scheduleMarkerRefresh();
+        scheduleAutoRotation();
+      });
       const renderer = typeof state.globe.renderer === "function" ? state.globe.renderer() : null;
       if (renderer) renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isTouch ? 1.35 : 1.85));
 
       resizeGlobe();
       applyViewLayout(state.view, 0);
       setGlobeInteraction(state.view);
+      refreshMarkers();
       loadLand();
 
       const initialJob = jobs.find((job) => job.id === params.get("job"));
@@ -656,6 +1262,14 @@
     });
     els.search.addEventListener("input", () => updateSearchState(true));
     els.search.addEventListener("focus", openResults);
+    els.categoryToggle.addEventListener("click", () => setCategoryMenu(!state.categoryOpen));
+    els.categoryMenu.addEventListener("click", (event) => {
+      const option = event.target.closest("[data-category]");
+      if (option) selectCategory(option.dataset.category);
+    });
+    document.addEventListener("pointerdown", (event) => {
+      if (state.categoryOpen && !els.categoryFilter.contains(event.target)) setCategoryMenu(false);
+    });
     els.form.addEventListener("submit", (event) => {
       event.preventDefault();
       const top = matchingJobs()[0];
@@ -675,19 +1289,36 @@
       if (state.featured) showApplyFeedback(state.featured);
     });
     els.reset.addEventListener("click", resetView);
+    const noteGlobeActivity = () => {
+      if (state.view !== "explore") return;
+      stopAutoRotation();
+      scheduleAutoRotation();
+    };
+    els.globe.addEventListener("pointerdown", stopAutoRotation, { passive: true });
+    els.globe.addEventListener("pointermove", noteGlobeActivity, { passive: true });
+    els.globe.addEventListener("pointerup", () => scheduleAutoRotation(), { passive: true });
+    els.globe.addEventListener("pointerleave", () => scheduleAutoRotation(), { passive: true });
+    els.globe.addEventListener("wheel", noteGlobeActivity, { passive: true });
     window.addEventListener("resize", resizeGlobe, { passive: true });
     if (!xhsMode) {
       window.addEventListener("popstate", () => {
         const next = new URLSearchParams(window.location.search);
-        const nextView = next.get("view") === "explore" || next.has("q") || next.has("job")
+        const nextView = next.get("view") === "explore" || next.has("q") || next.has("job") || next.has("category")
           ? "explore"
           : "landing";
+        state.query = next.get("q") || "";
+        state.category = next.get("category") || "全部";
+        els.search.value = state.query;
+        renderCategoryMenu();
+        renderResults();
+        refreshGlobePoints();
         if (nextView !== state.view) setView(nextView);
       });
     }
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        if (state.resultsOpen) closeResults();
+        if (state.categoryOpen) setCategoryMenu(false);
+        else if (state.resultsOpen) closeResults();
         else if (state.selected) clearSelection();
         else if (state.view === "explore") exitExplore("push");
       } else if (state.view === "explore" && state.selected && !state.resultsOpen && document.activeElement !== els.search) {
@@ -698,6 +1329,7 @@
   }
 
   function initialize() {
+    if (state.category !== "全部" && !categories[state.category]) state.category = "全部";
     if (xhsMode) {
       document.body.classList.add("is-xhs-tool");
       const dates = jobs.map((job) => job.postedAt).filter(Boolean).sort();
@@ -710,6 +1342,7 @@
       if (footer) footer.innerHTML = "<span>本地岗位数据</span><span class=\"footer-dot\"></span><span>无需联网 · 定期更新</span>";
     }
     setView(state.view, { instant: true, force: true });
+    renderCategoryMenu();
     renderResults();
     bindEvents();
     initializeGlobe();
