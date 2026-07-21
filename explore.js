@@ -1,6 +1,7 @@
 (function () {
   "use strict";
 
+  const xhsMode = Boolean(window.XHS_TOOL_MODE);
   const jobs = window.WORK_JOBS || [];
   const mapJobs = jobs.filter((job) => job.mapPrecision === "city"
     && Number.isFinite(job.lat)
@@ -8,10 +9,9 @@
   const categories = window.WORK_CATEGORIES || {};
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-  const params = new URLSearchParams(window.location.search);
+  const params = xhsMode ? new URLSearchParams() : new URLSearchParams(window.location.search);
   const initialExplore = params.get("view") === "explore"
     || params.has("q")
-    || params.has("type")
     || params.has("job");
 
   function spreadSharedLocations(list) {
@@ -43,16 +43,18 @@
   const state = {
     globe: null,
     query: params.get("q") || "",
-    category: params.get("type") || "全部",
     selected: null,
+    hovered: null,
     featured: null,
     ready: false,
     resultsOpen: false,
-    autoRotate: !reducedMotion && !isTouch,
+    autoRotate: !reducedMotion,
     view: initialExplore ? "explore" : "landing",
     transitioning: false,
     offset: [0, 0],
-    offsetAnimation: 0
+    offsetAnimation: 0,
+    lastPointClickAt: 0,
+    feedbackTimer: 0
   };
 
   const $ = (selector, scope = document) => scope.querySelector(selector);
@@ -69,7 +71,6 @@
     form: $("#search-form"),
     search: $("#job-search"),
     count: $("#search-count"),
-    options: $("#role-options"),
     sheet: $("#result-sheet"),
     resultLabel: $("#result-label"),
     resultList: $("#result-list"),
@@ -89,7 +90,9 @@
     cardSalary: $("#card-salary"),
     cardSummary: $("#card-summary"),
     cardTags: $("#card-tags"),
-    cardLink: $("#card-link")
+    cardApply: $("#card-apply"),
+    cardDetails: $("#card-details"),
+    cardActionFeedback: $("#card-action-feedback")
   };
 
   function escapeHtml(value) {
@@ -112,9 +115,6 @@
   }
 
   function matches(job) {
-    const categoryMatches = state.category === "全部"
-      || (state.category === "全球远程" ? job.remote : job.category === state.category);
-    if (!categoryMatches) return false;
     const query = normalize(state.query);
     if (!query) return true;
     const haystack = normalize([
@@ -135,7 +135,7 @@
   }
 
   function activeSearch() {
-    return Boolean(state.query.trim()) || state.category !== "全部";
+    return Boolean(state.query.trim());
   }
 
   function matchingJobs() {
@@ -144,41 +144,50 @@
 
   function pointRadius(job) {
     const base = 0.16 + Math.min(0.64, Math.log10((job.attention || 0) + 10) * 0.14);
-    if (!activeSearch()) return base;
-    return matches(job) ? base * 1.24 : Math.max(0.08, base * 0.42);
+    const hoverScale = state.hovered?.id === job.id ? 1.55 : 1;
+    if (!activeSearch()) return base * hoverScale;
+    return (matches(job) ? base * 1.24 : Math.max(0.08, base * 0.42)) * hoverScale;
   }
 
   function pointColor(job) {
     const color = colorFor(job);
+    if (state.hovered?.id === job.id) return hexToRgba(color, 1);
     if (!activeSearch()) return hexToRgba(color, job.remote ? 0.7 : 0.84);
     return matches(job) ? hexToRgba(color, 0.96) : "rgba(80, 92, 94, 0.075)";
   }
 
   function pointAltitude(job) {
     const base = job.remote ? 0.007 : 0.003;
-    return activeSearch() && matches(job) ? base + 0.004 : base;
+    const hoverLift = state.hovered?.id === job.id ? 0.008 : 0;
+    return (activeSearch() && matches(job) ? base + 0.004 : base) + hoverLift;
   }
 
   function tooltip(job) {
     if (!job) return "";
     const pointKind = job.mapBasis === "company-hq" ? "公司总部" : "职位城市";
-    return `<div class="map-tooltip" style="--tooltip-color:${colorFor(job)}"><span>${escapeHtml(job.category)} · ${pointKind}</span><b>${escapeHtml(job.title)}</b><small>${escapeHtml(job.mapCity)}</small></div>`;
+    return `<div class="map-tooltip" style="--tooltip-color:${colorFor(job)}">
+      <div class="map-tooltip-head">
+        <span><i aria-hidden="true"></i>${escapeHtml(job.category)} · ${pointKind}</span>
+        <em>${escapeHtml(job.posted)}</em>
+      </div>
+      <b>${escapeHtml(job.title)}</b>
+      <p>${escapeHtml(job.company)}</p>
+      <div class="map-tooltip-facts">
+        <span>${escapeHtml(job.mapCity || job.location)}</span>
+        <span>${escapeHtml(job.salary || "薪资面议")}</span>
+      </div>
+      <small>点击光点查看完整职位</small>
+    </div>`;
   }
 
-  function renderOptions() {
-    const names = ["全部", ...Object.keys(categories), "全球远程"];
-    els.options.innerHTML = names.map((name) => {
-      const color = name === "全部" ? "#28343a" : name === "全球远程" ? "#8b9394" : categories[name]?.color;
-      return `<button class="role-chip" type="button" data-category="${escapeHtml(name)}" aria-pressed="${String(name === state.category)}" style="--chip-color:${color}"><i aria-hidden="true"></i><span>${escapeHtml(name)}</span></button>`;
-    }).join("");
-
-    $$(".role-chip", els.options).forEach((button) => {
-      button.addEventListener("click", () => {
-        state.category = button.dataset.category;
-        $$(".role-chip", els.options).forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
-        updateSearchState(true);
-      });
-    });
+  function hoverJob(job) {
+    if ((state.hovered?.id || null) === (job?.id || null)) return;
+    state.hovered = job || null;
+    if (!state.globe) return;
+    state.globe
+      .pointRadius(pointRadius)
+      .pointColor(pointColor)
+      .pointAltitude(pointAltitude);
   }
 
   function renderResults() {
@@ -215,11 +224,11 @@
   }
 
   function syncUrl(mode = "replace") {
+    if (xhsMode) return;
     const next = new URLSearchParams();
     if (state.view === "explore") {
       next.set("view", "explore");
       if (state.query.trim()) next.set("q", state.query.trim());
-      if (state.category !== "全部") next.set("type", state.category);
       if (state.selected) next.set("job", state.selected.id);
     }
     const suffix = next.toString() ? `${window.location.pathname}?${next}` : window.location.pathname;
@@ -240,9 +249,39 @@
     renderResults();
     refreshGlobePoints();
     if (state.selected && !matches(state.selected)) clearSelection(false);
-    ensureFeatured();
     syncUrl();
     if (shouldOpen) openResults();
+  }
+
+  function setCardDetails(open) {
+    els.card.classList.toggle("is-details-open", open);
+    els.cardDetails.setAttribute("aria-expanded", String(open));
+    $("span", els.cardDetails).textContent = open ? "收起详情" : "查看详情";
+  }
+
+  function showApplyFeedback(job) {
+    window.clearTimeout(state.feedbackTimer);
+    els.cardActionFeedback.textContent = `请在 ${job.source} 搜索「${job.title}」进行投递`;
+    els.cardActionFeedback.hidden = false;
+    state.feedbackTimer = window.setTimeout(() => {
+      els.cardActionFeedback.hidden = true;
+    }, 3600);
+  }
+
+  function configureApplyLink(job) {
+    if (xhsMode) {
+      els.cardApply.removeAttribute("href");
+      els.cardApply.removeAttribute("target");
+      els.cardApply.removeAttribute("rel");
+      els.cardApply.classList.add("is-offline");
+      els.cardApply.setAttribute("aria-label", `获取 ${job.title} 的投递方式`);
+    } else {
+      els.cardApply.href = job.sourceUrl;
+      els.cardApply.target = "_blank";
+      els.cardApply.rel = "noreferrer noopener";
+      els.cardApply.classList.remove("is-offline");
+      els.cardApply.setAttribute("aria-label", `立即投递 ${job.title}`);
+    }
   }
 
   function renderCard(job) {
@@ -260,10 +299,14 @@
     els.cardSalary.textContent = job.salary;
     els.cardSummary.textContent = job.summary;
     els.cardTags.innerHTML = (job.tags || []).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
-    els.cardLink.href = job.sourceUrl;
+    configureApplyLink(job);
     const pool = matchingJobs();
     const position = Math.max(0, pool.findIndex((item) => item.id === job.id));
     els.cardPosition.textContent = `${String(position + 1).padStart(2, "0")} / ${String(pool.length).padStart(2, "0")}`;
+    if (changed) {
+      setCardDetails(false);
+      els.cardActionFeedback.hidden = true;
+    }
     if (changed && !reducedMotion) {
       els.card.classList.remove("is-changing");
       void els.card.offsetWidth;
@@ -271,20 +314,8 @@
     }
   }
 
-  function ensureFeatured() {
-    const pool = matchingJobs();
-    if (!pool.length) {
-      els.card.hidden = true;
-      state.featured = null;
-      return;
-    }
-    const next = state.featured && pool.some((job) => job.id === state.featured.id)
-      ? state.featured
-      : pool[0];
-    if (state.view === "explore") renderCard(next);
-  }
-
   function cycleFeatured(direction) {
+    if (!state.selected) return;
     const pool = matchingJobs();
     if (!pool.length) return;
     const currentIndex = Math.max(0, pool.findIndex((job) => job.id === state.featured?.id));
@@ -296,36 +327,60 @@
     state.selected = job;
     renderCard(job);
     const hasCityPoint = job.mapPrecision === "city" && Number.isFinite(job.mapLat) && Number.isFinite(job.mapLng);
-    if (hasCityPoint) pauseRotation();
+    const layout = viewLayout("explore");
+    animateOffset(layout.offset, reducedMotion ? 0 : 760);
     if (state.globe && hasCityPoint) {
       state.globe
         .ringsData([job])
         .ringColor(() => [hexToRgba(colorFor(job), 0.88), hexToRgba(colorFor(job), 0)])
-        .pointOfView({ lat: job.mapLat, lng: job.mapLng, altitude: viewLayout("explore").altitude }, reducedMotion ? 0 : 900);
+        .pointOfView({ lat: job.mapLat, lng: job.mapLng, altitude: layout.altitude }, reducedMotion ? 0 : 900);
     } else {
       state.globe?.ringsData([]);
+    }
+    if (state.globe && !reducedMotion) {
+      state.autoRotate = true;
+      state.globe.controls().autoRotate = true;
     }
     syncUrl();
   }
 
-  function clearSelection(sync = true) {
-    state.selected = null;
-    if (state.view === "landing") els.card.hidden = true;
-    else ensureFeatured();
-    state.globe?.ringsData([]);
-    if (sync) syncUrl();
+  function selectPointJob(job, event) {
+    state.lastPointClickAt = performance.now();
+    event?.stopPropagation?.();
+    selectJob(job);
   }
 
-  function pauseRotation() {
-    state.autoRotate = false;
-    if (state.globe) state.globe.controls().autoRotate = false;
+  function clearFromGlobe() {
+    if (performance.now() - state.lastPointClickAt < 180) return;
+    clearSelection();
+  }
+
+  function clearSelection(sync = true) {
+    const hadSelection = Boolean(state.selected);
+    state.selected = null;
+    state.featured = null;
+    els.card.hidden = true;
+    setCardDetails(false);
+    state.globe?.ringsData([]);
+    if (hadSelection && state.view === "explore" && state.globe) {
+      const layout = viewLayout("explore");
+      const current = state.globe.pointOfView();
+      const duration = reducedMotion ? 0 : 720;
+      animateOffset(layout.offset, duration);
+      state.globe.pointOfView({
+        lat: current?.lat,
+        lng: current?.lng,
+        altitude: layout.altitude
+      }, duration);
+    }
+    if (sync) syncUrl();
   }
 
   function resetView() {
     clearSelection(false);
     if (state.globe) {
       state.globe.pointOfView({ lat: 20, lng: 20, altitude: viewLayout("explore").altitude }, reducedMotion ? 0 : 720);
-      if (!reducedMotion && !isTouch) {
+      if (!reducedMotion) {
         state.autoRotate = true;
         state.globe.controls().autoRotate = true;
       }
@@ -341,6 +396,11 @@
   }
 
   async function loadLand() {
+    if (Array.isArray(window.WORLD_COUNTRIES)) {
+      state.globe?.polygonsData(window.WORLD_COUNTRIES);
+      return;
+    }
+    if (xhsMode) return;
     try {
       const response = await fetch("https://cdn.jsdelivr.net/gh/vasturiano/globe.gl@master/example/datasets/ne_110m_admin_0_countries.geojson");
       if (!response.ok) throw new Error(String(response.status));
@@ -377,9 +437,23 @@
       };
     }
     if (landscapePhone) {
+      if (!state.selected) {
+        return {
+          offset: [0, Math.round(height * 0.08)],
+          altitude: 1.28,
+          lng: 20
+        };
+      }
       return {
         offset: [Math.round(-width * 0.08), Math.round(height * 0.2)],
         altitude: 1.66,
+        lng: 20
+      };
+    }
+    if (!state.selected) {
+      return {
+        offset: [0, width <= 760 ? Math.round(height * 0.17) : Math.round(height * 0.07)],
+        altitude: width <= 760 ? 1.42 : 1.22,
         lng: 20
       };
     }
@@ -435,7 +509,7 @@
     controls.enableZoom = exploring;
     controls.enableRotate = exploring;
     controls.enablePan = false;
-    state.autoRotate = !reducedMotion && !isTouch;
+    state.autoRotate = !reducedMotion;
     controls.autoRotate = state.autoRotate;
   }
 
@@ -447,7 +521,7 @@
     els.body.classList.toggle("is-landing", view === "landing");
     els.body.classList.toggle("is-explore", view === "explore");
     els.body.classList.toggle("is-transitioning", duration > 0);
-    document.title = view === "explore" ? "寻找工作｜Job Everywhere" : "Job Everywhere｜世界各地正在招什么";
+    document.title = view === "explore" ? "寻找工作｜OpenWork" : "OpenWork｜世界各地正在招什么";
 
     if (view === "landing") {
       closeResults();
@@ -462,7 +536,10 @@
       controls.autoRotate = false;
     }
 
-    if (view === "explore") ensureFeatured();
+    if (view === "explore" && !state.selected) {
+      state.featured = null;
+      els.card.hidden = true;
+    }
 
     applyViewLayout(view, duration);
     if (options.history) syncUrl(options.history);
@@ -534,8 +611,9 @@
         .ringMaxRadius(2.8)
         .ringPropagationSpeed(reducedMotion ? 0 : 1)
         .ringRepeatPeriod(reducedMotion ? 0 : 1300)
-        .onPointClick(selectJob)
-        .onGlobeClick(() => clearSelection())
+        .onPointHover(hoverJob)
+        .onPointClick(selectPointJob)
+        .onGlobeClick(clearFromGlobe)
         .onGlobeReady(hideLoading);
 
       const material = state.globe.globeMaterial();
@@ -547,13 +625,11 @@
       }
 
       const controls = state.globe.controls();
-      controls.autoRotateSpeed = 0.14;
+      controls.autoRotateSpeed = 0.22;
       controls.enableDamping = true;
       controls.dampingFactor = 0.065;
       controls.minDistance = 108;
       controls.maxDistance = 370;
-      controls.addEventListener("start", pauseRotation);
-
       const renderer = typeof state.globe.renderer === "function" ? state.globe.renderer() : null;
       if (renderer) renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isTouch ? 1.35 : 1.85));
 
@@ -590,21 +666,31 @@
     els.cardClose.addEventListener("click", () => clearSelection());
     els.cardPrev.addEventListener("click", () => cycleFeatured(-1));
     els.cardNext.addEventListener("click", () => cycleFeatured(1));
+    els.cardDetails.addEventListener("click", () => {
+      setCardDetails(!els.card.classList.contains("is-details-open"));
+    });
+    els.cardApply.addEventListener("click", (event) => {
+      if (!xhsMode) return;
+      event.preventDefault();
+      if (state.featured) showApplyFeedback(state.featured);
+    });
     els.reset.addEventListener("click", resetView);
     window.addEventListener("resize", resizeGlobe, { passive: true });
-    window.addEventListener("popstate", () => {
-      const next = new URLSearchParams(window.location.search);
-      const nextView = next.get("view") === "explore" || next.has("q") || next.has("type") || next.has("job")
-        ? "explore"
-        : "landing";
-      if (nextView !== state.view) setView(nextView);
-    });
+    if (!xhsMode) {
+      window.addEventListener("popstate", () => {
+        const next = new URLSearchParams(window.location.search);
+        const nextView = next.get("view") === "explore" || next.has("q") || next.has("job")
+          ? "explore"
+          : "landing";
+        if (nextView !== state.view) setView(nextView);
+      });
+    }
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         if (state.resultsOpen) closeResults();
         else if (state.selected) clearSelection();
         else if (state.view === "explore") exitExplore("push");
-      } else if (state.view === "explore" && !state.resultsOpen && document.activeElement !== els.search) {
+      } else if (state.view === "explore" && state.selected && !state.resultsOpen && document.activeElement !== els.search) {
         if (event.key === "ArrowLeft") cycleFeatured(-1);
         if (event.key === "ArrowRight") cycleFeatured(1);
       }
@@ -612,8 +698,18 @@
   }
 
   function initialize() {
+    if (xhsMode) {
+      document.body.classList.add("is-xhs-tool");
+      const dates = jobs.map((job) => job.postedAt).filter(Boolean).sort();
+      const latestDate = dates[dates.length - 1] || "本期";
+      const quietWindow = $(".quiet-window");
+      const sourceWindow = $(".source-window span");
+      const footer = $(".landing-footer");
+      if (quietWindow) quietWindow.textContent = "离线精选版";
+      if (sourceWindow) sourceWindow.textContent = `数据截至 ${latestDate}`;
+      if (footer) footer.innerHTML = "<span>本地岗位数据</span><span class=\"footer-dot\"></span><span>无需联网 · 定期更新</span>";
+    }
     setView(state.view, { instant: true, force: true });
-    renderOptions();
     renderResults();
     bindEvents();
     initializeGlobe();
