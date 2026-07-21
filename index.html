@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="在一颗持续存在的地球上，发现最近 30 天来自真实城市与远程团队的工作机会。" />
-    <meta name="theme-color" content="#f0f0ec" />
+    <meta name="description" content="转动地球，找到世界各地正在发生的工作机会。" />
+    <meta name="theme-color" content="#f3f0e9" />
     <title>OpenWork｜世界各地正在招什么</title>
     <link rel="icon" href="openwork-mark.png" type="image/png" />
     <link rel="preconnect" href="https://unpkg.com" />
@@ -19,7 +19,7 @@
     <script type="module">
       import * as THREE from "https://unpkg.com/three@0.185.1/build/three.module.min.js";
       window.THREE = THREE;
-      await import("./explore.js?v=20260722-pr2-fixes");
+      await import("./explore.js?v=20260722-visual-refinement");
     </script>
   </head>
   <body class="app-page is-landing">
@@ -29,30 +29,31 @@
       <header class="app-header">
         <a class="wordmark" id="home-link" href="index.html" aria-label="返回首页">
           <span class="wordmark-mark" aria-hidden="true"><img src="openwork-mark.png" alt="" /></span>
-          <span>OpenWork</span>
+          <span class="wordmark-copy"><b>OpenWork</b><small>Global Job Atlas</small></span>
         </a>
         <div class="header-status" aria-live="polite">
-          <span class="quiet-window landing-reveal">过去 30 天</span>
+          <span class="quiet-window landing-reveal"><i></i>最近 30 天</span>
           <span class="source-window explore-reveal">
             <i class="live-dot" aria-hidden="true"></i>
-            <span>公开帖子 · 过去 30 天</span>
+            <span>岗位信号 · 最近 30 天</span>
           </span>
         </div>
       </header>
 
       <section class="landing-copy landing-reveal" aria-labelledby="landing-title">
-        <p class="landing-kicker">全球远程工作地图</p>
-        <h1 id="landing-title">工作在远方，<br />你不必远行。</h1>
-        <p class="landing-lead">寻找最近 30 天，来自真实城市与远程团队的工作机会。</p>
+        <p class="landing-kicker"><span>OpenWork</span><em>001</em></p>
+        <h1 id="landing-title">转动地球，<br />找到正在发生<br />的工作。</h1>
+        <p class="landing-lead">从城市坐标出发，发现世界各地真实发布的工作机会。</p>
         <button class="primary-entry" id="start-explore" type="button">
-          <span>开始查看</span>
+          <span>探索工作世界</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M14 7l5 5-5 5" /></svg>
         </button>
+        <p class="landing-footnote"><span aria-hidden="true"></span>每一个点，都落在真实城市</p>
       </section>
 
       <section class="earth-stage shared-earth" id="earth-stage" aria-label="全球工作地图">
         <div id="work-globe" aria-hidden="true"></div>
-        <div class="landing-orbit-note landing-reveal" aria-hidden="true"><span></span> 每个城市点，都有明确的位置依据</div>
+        <div class="landing-orbit-note landing-reveal" aria-hidden="true"><span>拖动地球</span><i></i><span>沿城市寻找机会</span></div>
         <div class="globe-empty" id="globe-empty" hidden>
           <p>地球暂时没有载入，但仍可在下方搜索岗位。</p>
         </div>
@@ -111,21 +112,22 @@
         <form class="search-dock" id="search-form" role="search">
           <label class="search-input-wrap" for="job-search">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="m16 16 4 4" /></svg>
-            <input id="job-search" type="search" autocomplete="off" placeholder="搜索职位、公司或城市" aria-controls="result-sheet" />
+            <span class="search-label" aria-hidden="true">Search</span>
+            <input id="job-search" type="search" autocomplete="off" placeholder="职位、公司或城市" aria-label="搜索职位、公司或城市" aria-controls="result-sheet" />
             <span class="search-count" id="search-count" aria-live="polite"></span>
           </label>
         </form>
       </section>
 
       <footer class="landing-footer landing-reveal">
-        <span>公开招聘帖</span>
+        <span>Global Job Atlas</span>
         <span class="footer-dot"></span>
-        <span>X · Reddit · 领英 · 公开职位源</span>
+        <span>X · Reddit · LinkedIn · 公开职位源</span>
       </footer>
 
       <div class="explore-loading" id="explore-loading" aria-live="polite">
         <span></span>
-        <p>正在点亮工作</p>
+        <p>正在展开世界</p>
       </div>
     </main>
   </body>

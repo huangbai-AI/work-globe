@@ -14,15 +14,15 @@
     || params.has("q")
     || params.has("job");
   const countryPalette = [
-    "#E8CCC8", "#CBD7D0", "#C8D3DF", "#E9DBC3", "#D9CFE0",
-    "#E8D1C9", "#C7D8D5", "#DDD5C9", "#CED6E5", "#E3D0D8"
+    "#E7CBC5", "#C9D8D0", "#C5D3DF", "#E7D9C4", "#D8CEE0",
+    "#E8D0C8", "#C3D8D4", "#DDD4C6", "#CCD5E4", "#E1CBD3"
   ];
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
   const countryCapCurvatureResolution = 0.75;
   const clusterSplitThreshold = 0.4;
   const pinPalette = [
-    "#FF8FA3", "#FFAA72", "#FFD45F", "#79D58A", "#5ED1B5",
-    "#55C8D8", "#6CAEF5", "#8B91F2", "#B780EA", "#F08CC5"
+    "#F07B68", "#E8A65A", "#D4B451", "#76B391", "#55AD9F",
+    "#5EA8B5", "#6A9ED6", "#737DDA", "#9A7CC3", "#C87C9A"
   ];
   const brandIconAliases = [
     ["anthropic", "anthropic"], ["replit", "replit"], ["mastercard", "mastercard"],
@@ -279,7 +279,7 @@
   }
 
   function hoverJob(job) {
-    const next = job?.job || job || null;
+    const next = job?.job || job?.jobs?.[0] || job || null;
     if ((state.hovered?.id || null) === (next?.id || null)) return;
     state.hovered = next;
     if (!state.globe) return;
@@ -312,12 +312,14 @@
 
   function openResults() {
     state.resultsOpen = true;
+    els.body.classList.add("is-results-open");
     els.sheet.hidden = false;
     renderResults();
   }
 
   function closeResults() {
     state.resultsOpen = false;
+    els.body.classList.remove("is-results-open");
     els.sheet.hidden = true;
   }
 
@@ -340,6 +342,7 @@
 
   function updateSearchState(shouldOpen) {
     state.query = els.search.value;
+    els.body.classList.toggle("has-search", activeSearch());
     renderResults();
     refreshGlobePoints();
     if (state.selected && !matches(state.selected)) clearSelection(false);
@@ -382,6 +385,7 @@
     if (!job) return;
     const changed = state.featured?.id !== job.id;
     state.featured = job;
+    els.body.classList.add("has-selection");
     els.card.hidden = false;
     els.card.dataset.selectionType = state.selectionType || "job";
     els.card.style.setProperty("--job-color", colorFor(job));
@@ -513,6 +517,7 @@
     state.selectionLabel = "";
     if (!keepCountry) state.selectedCountryKey = null;
     state.featured = null;
+    els.body.classList.remove("has-selection");
     els.card.hidden = true;
     setCardDetails(false);
     state.globe?.ringsData([]);
@@ -1054,24 +1059,40 @@
     const group = new window.THREE.Group();
     const clustered = marker.isCluster;
     const headRadius = clustered
-      ? Math.min(2.2, 1.62 + Math.log10(marker.jobs.length + 1) * 0.3)
-      : 1.34;
-    const stemLength = clustered ? 0.74 : 0.66;
-    const headPosition = new window.THREE.Vector3(0, 0, stemLength + headRadius);
+      ? Math.min(1.82, 1.28 + Math.log10(marker.jobs.length + 1) * 0.22)
+      : 0.96;
+    const stemLength = clustered ? 0.42 : 0.3;
+    const headPosition = new window.THREE.Vector3(0, 0, stemLength + headRadius * 0.9);
     const stem = new window.THREE.Mesh(
-      new window.THREE.CylinderGeometry(clustered ? 0.13 : 0.1, clustered ? 0.13 : 0.1, stemLength, 8),
-      new window.THREE.MeshBasicMaterial({ color: "#202628" })
+      new window.THREE.CylinderGeometry(clustered ? 0.085 : 0.065, clustered ? 0.085 : 0.065, stemLength, 10),
+      new window.THREE.MeshBasicMaterial({ color: "#283235" })
     );
     stem.rotation.x = Math.PI / 2;
     stem.position.set(0, 0, stemLength / 2);
     group.add(stem);
 
     const head = new window.THREE.Mesh(
-      new window.THREE.SphereGeometry(headRadius, 20, 14),
+      new window.THREE.SphereGeometry(headRadius, 24, 18),
       new window.THREE.MeshBasicMaterial({ color: marker.color })
     );
     head.position.copy(headPosition);
     group.add(head);
+
+    const halo = new window.THREE.Mesh(
+      new window.THREE.RingGeometry(headRadius * 0.82, headRadius * 1.22, 32),
+      new window.THREE.MeshBasicMaterial({
+        color: "#fffdf7",
+        transparent: true,
+        opacity: clustered ? 0.38 : 0.28,
+        depthWrite: false,
+        side: window.THREE.DoubleSide
+      })
+    );
+    halo.position.copy(headPosition);
+    halo.position.z += headRadius * 1.03;
+    halo.renderOrder = 4;
+    halo.visible = false;
+    group.add(halo);
 
     const { textureKey, texture } = markerLabelTexture(marker);
     const labelMaterial = new window.THREE.MeshBasicMaterial({
@@ -1082,17 +1103,18 @@
       side: window.THREE.DoubleSide
     });
     const label = new window.THREE.Mesh(
-      new window.THREE.CircleGeometry(headRadius * (clustered ? 0.6 : 0.62), 24),
+      new window.THREE.CircleGeometry(headRadius * (clustered ? 0.56 : 0.58), 28),
       labelMaterial
     );
     label.position.copy(headPosition);
-    label.position.z += headRadius * 1.08;
+    label.position.z += headRadius * 1.06;
     label.renderOrder = 5;
+    label.visible = false;
     registerMarkerTextureMaterial(textureKey, labelMaterial);
     group.add(label);
 
     const hitTarget = new window.THREE.Mesh(
-      new window.THREE.SphereGeometry(headRadius * (isTouch ? 1.42 : 1.2), 12, 8),
+      new window.THREE.SphereGeometry(headRadius * (isTouch ? 1.68 : 1.32), 14, 10),
       new window.THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
     );
     hitTarget.position.copy(head.position);
@@ -1105,11 +1127,18 @@
 
   function refreshMarkerScales() {
     const viewScale = markerScale();
+    const sceneScale = state.view === "landing" ? 0.68 : 1;
     state.markers.forEach((marker) => {
       if (!marker._threeObject) return;
       const hovered = marker.jobs.some((job) => job.id === state.hovered?.id);
-      const scale = viewScale * (hovered ? 1.16 : 1);
+      const scale = viewScale * sceneScale * (hovered ? 1.2 : 1);
       marker._threeObject.scale.setScalar(scale);
+      if (marker._threeObject.children[2]) {
+        marker._threeObject.children[2].visible = state.view === "explore" && hovered;
+      }
+      if (marker._threeObject.children[3]) {
+        marker._threeObject.children[3].visible = state.view === "explore" && hovered;
+      }
     });
   }
 
@@ -1147,6 +1176,7 @@
   function hideLoading() {
     if (state.ready) return;
     state.ready = true;
+    els.body.classList.add("is-ui-ready");
     els.loading.classList.add("is-hidden");
   }
 
@@ -1274,7 +1304,7 @@
 
   function setView(view, options = {}) {
     if (view === state.view && !options.force) return;
-    const duration = reducedMotion || options.instant ? 0 : 1180;
+    const duration = reducedMotion || options.instant ? 0 : 860;
     state.view = view;
     state.transitioning = duration > 0;
     els.body.classList.toggle("is-landing", view === "landing");
@@ -1301,6 +1331,7 @@
     }
 
     applyViewLayout(view, duration);
+    if (state.globe) refreshMarkers();
     if (options.history) syncUrl(options.history);
 
     window.setTimeout(() => {
@@ -1347,8 +1378,8 @@
         .globeImageUrl(null)
         .bumpImageUrl(null)
         .showAtmosphere(true)
-        .atmosphereColor("#b9cccf")
-        .atmosphereAltitude(0.13)
+        .atmosphereColor("#c6d6d3")
+        .atmosphereAltitude(0.16)
         .showGraticules(false)
         .polygonsData([])
         .polygonAltitude(countryAltitude)
@@ -1391,16 +1422,16 @@
 
       const material = state.globe.globeMaterial();
       if (material) {
-        material.color.set("#AFC9D1");
-        material.emissive.set("#DCE8E7");
-        material.emissiveIntensity = 0.2;
-        if (material.specular) material.specular.set("#F3FAFA");
-        material.shininess = 8;
+        material.color.set("#B6CACD");
+        material.emissive.set("#E4EDEB");
+        material.emissiveIntensity = 0.22;
+        if (material.specular) material.specular.set("#F7FBF8");
+        material.shininess = 5;
         material.needsUpdate = true;
       }
 
       const controls = state.globe.controls();
-      controls.autoRotateSpeed = 0.22;
+      controls.autoRotateSpeed = 0.18;
       controls.enableDamping = true;
       controls.dampingFactor = 0.065;
       controls.minDistance = 108;
@@ -1506,6 +1537,7 @@
       if (footer) footer.innerHTML = "<span>本地岗位数据</span><span class=\"footer-dot\"></span><span>无需联网 · 定期更新</span>";
     }
     setView(state.view, { instant: true, force: true });
+    els.body.classList.toggle("has-search", activeSearch());
     renderResults();
     bindEvents();
     initializeGlobe();

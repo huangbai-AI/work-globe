@@ -240,17 +240,22 @@ await new Promise((resolve) => window.setTimeout(resolve, 180));
 assert.equal(globeState.objects.length, expandedMarkerCount, "跨越 40% 阈值的双向行为应保持一致");
 const samplePin = globeState.objectFactory(globeState.objects[0]);
 assert.equal(samplePin.isGroup, true, "圆钉应使用三维组合对象");
-assert.ok(samplePin.children.length >= 4, "圆钉应包含短针、钉头、公司标识和触控区域");
-assert.ok(samplePin.children[1].geometry.parameters.radius >= 1.3, "单个岗位钉头应放大约四倍");
+assert.ok(samplePin.children.length >= 5, "圆钉应包含短针、钉头、光环、公司标识和触控区域");
+assert.ok(
+  samplePin.children[1].geometry.parameters.radius >= 0.9
+    && samplePin.children[1].geometry.parameters.radius <= 1.9,
+  "岗位气泡应清晰可见，但不能遮挡国家分布"
+);
 assert.ok(Math.abs(samplePin.children[0].rotation.x - Math.PI / 2) < 1e-6, "黑色短针应垂直于地球表面");
 assert.equal(samplePin.children[0].position.x, 0, "短针不能横向偏移");
 assert.equal(samplePin.children[0].position.y, 0, "短针不能纵向偏移");
 assert.equal(samplePin.children[1].position.x, 0, "圆头应与短针保持同轴");
 assert.equal(samplePin.children[1].position.y, 0, "圆头应与短针保持同轴");
 assert.ok(samplePin.children[1].position.z > samplePin.children[0].position.z, "圆头应位于短针正上方");
-assert.equal(samplePin.children[2].position.x, 0, "公司标识应居中在圆头上");
-assert.equal(samplePin.children[2].position.y, 0, "公司标识应居中在圆头上");
-assert.ok(samplePin.children[2].material.map, "圆钉头部应包含公司 Logo 或简称纹理");
+assert.equal(samplePin.children[2].geometry.type, "RingGeometry", "岗位气泡应使用轻量光环强化位置感");
+assert.equal(samplePin.children[3].position.x, 0, "公司标识应居中在圆头上");
+assert.equal(samplePin.children[3].position.y, 0, "公司标识应居中在圆头上");
+assert.ok(samplePin.children[3].material.map, "圆钉头部应包含公司 Logo 或简称纹理");
 assert.ok(samplePin.children[1].material.color.getHexString() !== "647cf1", "圆钉应使用独立的高纯度马卡龙配色");
 
 window.document.querySelector("#work-globe").dispatchEvent(new window.Event("pointermove"));
