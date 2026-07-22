@@ -23,6 +23,10 @@
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
   const countryCapCurvatureResolution = 0.75;
   const clusterSplitThreshold = 0.4;
+  const markerIdleScale = 0.6;
+  const clusterIdleScale = 0.66;
+  const markerHoverMultiplier = 1.75;
+  const markerScaleDuration = 210;
   const pinPalette = [
     "#F7C31A", "#2181D5", "#48934B", "#F3842D", "#C12633",
     "#419492", "#74509A", "#B31727", "#409291", "#704A95",
@@ -334,7 +338,7 @@
       else hideHoverTooltip();
     }
     if (!state.globe) return;
-    refreshMarkerScales();
+    refreshMarkerScales(true);
   }
 
   function renderResults() {
@@ -1159,7 +1163,7 @@
     group.add(label);
 
     const hitTarget = new window.THREE.Mesh(
-      new window.THREE.SphereGeometry(headRadius * (isTouch ? 1.68 : 1.32), 14, 10),
+      new window.THREE.SphereGeometry(headRadius * (isTouch ? 2.8 : 2.2), 14, 10),
       new window.THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
     );
     hitTarget.position.copy(head.position);
@@ -1170,14 +1174,34 @@
     return group;
   }
 
-  function refreshMarkerScales() {
+  function setMarkerObjectScale(object, targetScale, animate) {
+    const currentScale = Number(object.scale?.x) || targetScale;
+    window.cancelAnimationFrame(object.userData.scaleAnimation || 0);
+    if (!animate || reducedMotion || Math.abs(currentScale - targetScale) < 0.001) {
+      object.scale.setScalar(targetScale);
+      object.userData.scaleAnimation = 0;
+      return;
+    }
+    const startedAt = window.performance.now();
+    const step = (time) => {
+      const progress = Math.min(1, (time - startedAt) / markerScaleDuration);
+      const eased = 1 - ((1 - progress) ** 3);
+      object.scale.setScalar(currentScale + (targetScale - currentScale) * eased);
+      if (progress < 1) object.userData.scaleAnimation = window.requestAnimationFrame(step);
+      else object.userData.scaleAnimation = 0;
+    };
+    object.userData.scaleAnimation = window.requestAnimationFrame(step);
+  }
+
+  function refreshMarkerScales(animate = false) {
     const viewScale = markerScale();
-    const sceneScale = state.view === "landing" ? 0.68 : 1;
+    const sceneScale = state.view === "landing" ? 0.78 : 1;
     state.markers.forEach((marker) => {
       if (!marker._threeObject) return;
       const hovered = marker.jobs.some((job) => job.id === state.hovered?.id);
-      const scale = viewScale * sceneScale * (hovered ? 1.2 : 1);
-      marker._threeObject.scale.setScalar(scale);
+      const idleScale = marker.isCluster ? clusterIdleScale : markerIdleScale;
+      const scale = viewScale * sceneScale * idleScale * (hovered ? markerHoverMultiplier : 1);
+      setMarkerObjectScale(marker._threeObject, scale, animate);
       if (marker._threeObject.children[2]) {
         marker._threeObject.children[2].visible = state.view === "explore" && hovered;
       }
@@ -1195,7 +1219,7 @@
       state.globe
         .pointsData([])
         .objectsData(markers);
-      window.requestAnimationFrame(refreshMarkerScales);
+      window.requestAnimationFrame(() => refreshMarkerScales(false));
     } else {
       state.globe
         .objectsData?.([])
@@ -1502,7 +1526,7 @@
       controls.minDistance = 108;
       controls.maxDistance = 320;
       controls.addEventListener("start", stopAutoRotation);
-      controls.addEventListener("change", refreshMarkerScales);
+      controls.addEventListener("change", () => refreshMarkerScales(false));
       controls.addEventListener("end", () => {
         scheduleMarkerRefresh();
         scheduleAutoRotation();
