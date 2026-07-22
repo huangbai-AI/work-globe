@@ -9,7 +9,6 @@
 :root {
   --xhs-keyboard-inset: 0px;
   --xhs-safe-top: max(env(safe-area-inset-top, 0px), 28px);
-  --xhs-brand-clearance: 32px;
 }
 
 html { touch-action: manipulation; }
@@ -39,13 +38,15 @@ html { touch-action: manipulation; }
 
 @media (max-width: 760px) {
   .is-xhs-tool .app-header {
-    height: calc(72px + var(--xhs-safe-top) + var(--xhs-brand-clearance));
-    padding: calc(var(--xhs-safe-top) + var(--xhs-brand-clearance)) 19px 0;
+    height: calc(72px + var(--xhs-safe-top));
+    padding: var(--xhs-safe-top) 19px 0 72px;
   }
 
   .is-xhs-tool .job-card {
     top: calc(88px + var(--xhs-safe-top));
     width: calc(100vw - 48px);
+    padding-right: 38px;
+    padding-left: 38px;
     overflow: visible;
   }
 
