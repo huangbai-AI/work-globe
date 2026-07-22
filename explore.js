@@ -14,17 +14,18 @@
     || params.has("q")
     || params.has("job");
   const countryPalette = [
-    "#E5CAC4", "#C9D8C9", "#D7CEDB", "#E5D7C2", "#D9CCE0",
-    "#E6CCC2", "#C8DAC9", "#DCD0BE", "#D4D9C1", "#DFC8D1"
+    "#E6CCCB", "#CBD6CD", "#C8D4E6", "#E8D9C4", "#D9CEE1",
+    "#E5D2D3", "#CAD6D1", "#E8D3BD", "#C7C8DC", "#E2CDD0"
   ];
-  const oceanColor = "#BBD2DA";
-  const atmosphereColor = "#D7E6E7";
+  const oceanColor = "#E1ECF7";
+  const atmosphereColor = "#EAF3FB";
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
   const countryCapCurvatureResolution = 0.75;
   const clusterSplitThreshold = 0.4;
   const pinPalette = [
-    "#F07B68", "#E8A65A", "#D4B451", "#76B391", "#55AD9F",
-    "#5EA8B5", "#6A9ED6", "#737DDA", "#9A7CC3", "#C87C9A"
+    "#F7C31A", "#2181D5", "#48934B", "#F3842D", "#C12633",
+    "#419492", "#74509A", "#B31727", "#CF5A0C", "#A77F48",
+    "#454F7C", "#E96090"
   ];
   const brandIconAliases = [
     ["anthropic", "anthropic"], ["replit", "replit"], ["mastercard", "mastercard"],
@@ -185,7 +186,7 @@
   }
 
   function colorFor(job) {
-    return categories[job.category]?.color || "#647cf1";
+    return categories[job.category]?.color || "#2181D5";
   }
 
   function normalize(value) {
@@ -803,13 +804,13 @@
   }
 
   function countryAltitude(feature) {
-    return feature._countryKey === state.selectedCountryKey ? 0.0075 : 0.0055;
+    return feature._countryKey === state.selectedCountryKey ? 0.0085 : 0.006;
   }
 
   function countrySideColor(feature) {
     return feature._countryKey === state.selectedCountryKey
-      ? "rgba(70, 78, 78, 0.2)"
-      : "rgba(82, 91, 91, 0.11)";
+      ? "rgba(255,255,255,1)"
+      : "rgba(255,255,255,0.84)";
   }
 
   function countryLabel(feature) {
@@ -824,7 +825,7 @@
       .polygonCapColor(landColor)
       .polygonCapMaterial(landMaterial)
       .polygonSideColor(countrySideColor)
-      .polygonStrokeColor(() => "rgba(255,255,255,0.96)");
+      .polygonStrokeColor(() => "rgba(255,255,255,0.98)");
   }
 
   function enablePlateShadows() {
@@ -1081,11 +1082,11 @@
     group.add(head);
 
     const halo = new window.THREE.Mesh(
-      new window.THREE.RingGeometry(headRadius * 0.82, headRadius * 1.22, 32),
+      new window.THREE.RingGeometry(headRadius * 0.94, headRadius * 1.14, 32),
       new window.THREE.MeshBasicMaterial({
-        color: "#fffdf7",
+        color: "#ffffff",
         transparent: true,
-        opacity: clustered ? 0.38 : 0.28,
+        opacity: 0.98,
         depthWrite: false,
         side: window.THREE.DoubleSide
       })
@@ -1093,7 +1094,7 @@
     halo.position.copy(headPosition);
     halo.position.z += headRadius * 1.03;
     halo.renderOrder = 4;
-    halo.visible = false;
+    halo.visible = true;
     group.add(halo);
 
     const { textureKey, texture } = markerLabelTexture(marker);
@@ -1136,7 +1137,7 @@
       const scale = viewScale * sceneScale * (hovered ? 1.2 : 1);
       marker._threeObject.scale.setScalar(scale);
       if (marker._threeObject.children[2]) {
-        marker._threeObject.children[2].visible = state.view === "explore" && hovered;
+        marker._threeObject.children[2].visible = true;
       }
       if (marker._threeObject.children[3]) {
         marker._threeObject.children[3].visible = state.view === "explore" && hovered;
@@ -1389,7 +1390,7 @@
         .polygonCapColor(landColor)
         .polygonCapMaterial(landMaterial)
         .polygonSideColor(countrySideColor)
-        .polygonStrokeColor(() => "rgba(255,255,255,0.96)")
+        .polygonStrokeColor(() => "rgba(255,255,255,0.98)")
         .polygonLabel(countryLabel)
         .polygonsTransitionDuration(reducedMotion ? 0 : 520)
         .pointsData([])

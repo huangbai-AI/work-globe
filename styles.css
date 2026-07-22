@@ -1,19 +1,19 @@
 :root {
   color-scheme: light;
-  --canvas: #f3f0e9;
-  --canvas-soft: #f8f6f0;
-  --canvas-deep: #dbe2df;
-  --paper: rgba(253, 252, 247, 0.92);
-  --paper-solid: #fcfbf7;
-  --ink: #12191c;
-  --ink-soft: #485457;
-  --ink-faint: #788285;
+  --canvas: #e1ecf7;
+  --canvas-soft: #e7f0f8;
+  --canvas-deep: #d4e2ef;
+  --paper: rgba(252, 252, 252, 0.94);
+  --paper-solid: #fcfcfc;
+  --ink: #111417;
+  --ink-soft: #4e5559;
+  --ink-faint: #7b848a;
   --line: rgba(18, 25, 28, 0.12);
   --line-strong: rgba(18, 25, 28, 0.22);
-  --accent: #ff7158;
-  --accent-soft: rgba(255, 113, 88, 0.13);
-  --blue: #667af6;
-  --sage: #79a898;
+  --accent: #f3842d;
+  --accent-soft: rgba(243, 132, 45, 0.14);
+  --blue: #2181d5;
+  --sage: #48934b;
   --shadow-soft: 0 18px 60px rgba(38, 49, 48, 0.09), 0 2px 8px rgba(38, 49, 48, 0.04);
   --shadow-float: 0 30px 100px rgba(38, 49, 48, 0.14), 0 3px 14px rgba(38, 49, 48, 0.06);
   --display: "Iowan Old Style", "Bodoni 72", "Songti SC", STSong, "Noto Serif CJK SC", serif;
@@ -110,9 +110,7 @@ input:focus-visible {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  background:
-    radial-gradient(circle at 78% 44%, rgba(255, 255, 255, 0.92) 0 9%, rgba(255,255,255,0.46) 25%, transparent 49%),
-    linear-gradient(116deg, #f6f3ed 0%, #efeee8 52%, #e8eeeb 100%);
+  background: var(--canvas);
 }
 
 .app-shell::before,
@@ -130,7 +128,7 @@ input:focus-visible {
     radial-gradient(circle, rgba(26, 36, 38, 0.18) 0 0.36px, transparent 0.5px);
   background-position: 0 0, 7px 6px;
   background-size: 13px 13px, 17px 17px;
-  opacity: 0.055;
+  opacity: 0.025;
   mix-blend-mode: multiply;
 }
 
@@ -142,7 +140,7 @@ input:focus-visible {
   transition: opacity 720ms var(--ease-out);
 }
 
-.app-page.is-explore .app-shell::after { opacity: 0.45; }
+.app-page.is-explore .app-shell::after { opacity: 0; }
 
 /* 顶部品牌 */
 .app-header {
@@ -242,7 +240,7 @@ input:focus-visible {
   padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(250, 249, 244, 0.7);
+  background: rgba(252, 252, 252, 0.76);
   backdrop-filter: blur(18px) saturate(112%);
 }
 
@@ -250,7 +248,7 @@ input:focus-visible {
   width: 5px;
   height: 5px;
   background: var(--sage);
-  box-shadow: 0 0 0 5px rgba(121, 168, 152, 0.13);
+  box-shadow: 0 0 0 5px rgba(72, 147, 75, 0.13);
 }
 
 /* 首页文案 */
@@ -331,7 +329,7 @@ input:focus-visible {
   border-radius: 999px;
   background: var(--ink);
   box-shadow: 0 15px 34px rgba(18, 25, 28, 0.14);
-  color: #fbfaf6;
+  color: #fcfcfc;
   font-size: 12px;
   font-weight: 560;
   letter-spacing: 0.05em;
@@ -369,7 +367,7 @@ input:focus-visible {
 }
 
 .primary-entry:hover::before { transform: translateX(120%); }
-.primary-entry:hover svg { background: #ff806a; transform: translateX(2px) rotate(-6deg); }
+.primary-entry:hover svg { background: var(--accent); transform: translateX(2px) rotate(-6deg); }
 .primary-entry:active { transform: translateY(0) scale(0.985); }
 
 .landing-footnote {
@@ -448,7 +446,7 @@ input:focus-visible {
   width: min(72vw, 980px);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.5), rgba(216,227,224,0.13) 58%, transparent 72%);
+  background: radial-gradient(circle, rgba(255,255,255,0.5), rgba(225,236,247,0.14) 58%, transparent 72%);
   content: "";
   filter: blur(18px);
   transition: opacity 660ms var(--ease-out), transform 760ms var(--ease-out);
@@ -460,11 +458,11 @@ input:focus-visible {
 .app-page.is-explore .shared-earth::before { opacity: 0.6; transform: translate(-13%, -10%) scale(1.14); }
 
 .app-page #work-globe canvas {
-  filter: saturate(0.84) contrast(0.99) brightness(1.015);
+  filter: none;
   transition: filter 720ms var(--ease-out);
 }
 
-.app-page.is-landing #work-globe canvas { cursor: default; filter: saturate(0.76) contrast(0.98) brightness(1.025); }
+.app-page.is-landing #work-globe canvas { cursor: default; filter: none; }
 .app-page.is-explore #work-globe canvas { cursor: grab; }
 .app-page.is-explore #work-globe canvas:active { cursor: grabbing; }
 .app-page #work-globe.is-country-hovered canvas { cursor: pointer; }
@@ -499,7 +497,7 @@ input:focus-visible {
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgba(250, 249, 244, 0.7);
+  background: rgba(252, 252, 252, 0.76);
   box-shadow: 0 9px 30px rgba(38,49,48,0.06);
   color: var(--ink-soft);
   backdrop-filter: blur(18px);
@@ -594,7 +592,7 @@ input:focus-visible {
   overflow: hidden;
   border: 1px solid rgba(18, 25, 28, 0.11);
   border-radius: 24px;
-  background: rgba(253, 252, 247, 0.95);
+  background: rgba(252, 252, 252, 0.96);
   box-shadow: var(--shadow-float);
   color: var(--ink);
   backdrop-filter: blur(24px) saturate(112%);
@@ -703,7 +701,7 @@ input:focus-visible {
   padding: 13px 15px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: rgba(253,252,247,0.95);
+  background: rgba(252,252,252,0.96);
   box-shadow: var(--shadow-soft);
   color: var(--ink);
   backdrop-filter: blur(18px);
@@ -724,8 +722,7 @@ input:focus-visible {
   overflow: visible;
   border: 1px solid rgba(18,25,28,0.12);
   border-radius: 30px;
-  background:
-    linear-gradient(130deg, rgba(255,254,250,0.97), rgba(247,247,242,0.88));
+  background: rgba(252,252,252,0.95);
   box-shadow: var(--shadow-float);
   color: var(--ink);
   backdrop-filter: blur(26px) saturate(112%);
@@ -777,7 +774,7 @@ input:focus-visible {
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgba(252,251,247,0.86);
+  background: rgba(252,252,252,0.9);
   box-shadow: 0 10px 28px rgba(38,49,48,0.08);
   color: var(--ink-soft);
   backdrop-filter: blur(18px);
@@ -788,7 +785,7 @@ input:focus-visible {
 .card-switch svg { width: 17px; height: 17px; }
 .card-switch-prev { left: -58px; }
 .card-switch-next { right: -58px; }
-.card-switch:hover { background: #fffefa; color: var(--ink); transform: translateY(-50%) scale(1.07); }
+.card-switch:hover { background: #fcfcfc; color: var(--ink); transform: translateY(-50%) scale(1.07); }
 .card-switch:active { transform: translateY(-50%) scale(0.94); }
 
 .job-card-topline {
@@ -936,7 +933,7 @@ input:focus-visible {
 }
 
 .job-action svg { width: 15px; height: 15px; }
-.job-action-primary { min-width: 138px; background: var(--ink); color: #fffefa; }
+.job-action-primary { min-width: 138px; background: var(--ink); color: #fcfcfc; }
 .job-action-primary:hover { background: #273135; transform: translateY(-1px); }
 .job-action-secondary { min-width: 118px; border-color: var(--line); background: rgba(255,255,255,0.36); color: var(--ink-soft); }
 .job-action-secondary:hover { border-color: var(--line-strong); color: var(--ink); }
@@ -980,7 +977,7 @@ input:focus-visible {
   padding: 7px;
   border: 1px solid rgba(18,25,28,0.13);
   border-radius: 999px;
-  background: rgba(253,252,247,0.91);
+  background: rgba(252,252,252,0.94);
   box-shadow: 0 18px 62px rgba(38,49,48,0.13), 0 2px 9px rgba(38,49,48,0.05);
   backdrop-filter: blur(26px) saturate(112%);
   transition: border-color 180ms ease, box-shadow 220ms ease, background 180ms ease;
@@ -988,8 +985,8 @@ input:focus-visible {
 
 .search-dock:focus-within {
   border-color: rgba(18,25,28,0.25);
-  background: rgba(255,254,250,0.97);
-  box-shadow: 0 22px 74px rgba(38,49,48,0.16), 0 0 0 4px rgba(102,122,246,0.08);
+  background: rgba(255,255,255,0.98);
+  box-shadow: 0 22px 74px rgba(38,49,48,0.16), 0 0 0 4px rgba(33,129,213,0.1);
 }
 
 .search-input-wrap {
@@ -1049,7 +1046,7 @@ input:focus-visible {
   overflow-y: auto;
   border: 1px solid rgba(18,25,28,0.12);
   border-radius: 26px;
-  background: rgba(253,252,247,0.95);
+  background: rgba(252,252,252,0.96);
   box-shadow: var(--shadow-float);
   backdrop-filter: blur(26px) saturate(112%);
   overscroll-behavior: contain;
@@ -1210,9 +1207,7 @@ input:focus-visible {
   .app-shell { min-height: 100vh; min-height: 100dvh; }
 
   .app-shell {
-    background:
-      radial-gradient(circle at 50% 67%, rgba(255,255,255,0.72), transparent 45%),
-      linear-gradient(180deg, #f7f4ee 0%, #e9efec 100%);
+    background: var(--canvas);
   }
 
   .app-shell::after { background: radial-gradient(circle at 50% 48%, rgba(255,255,255,0.56), transparent 60%); }

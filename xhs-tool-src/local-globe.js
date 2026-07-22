@@ -48,8 +48,8 @@
       this._centerLat = 20;
       this._centerLng = 20;
       this._altitude = 1.7;
-      this._waterColor = "#BBD2DA";
-      this._atmosphereColor = "#D7E6E7";
+      this._waterColor = "#E1ECF7";
+      this._atmosphereColor = "#EAF3FB";
       this._showAtmosphere = true;
       this._polygons = [];
       this._points = [];
@@ -57,10 +57,10 @@
       this._pointLat = "lat";
       this._pointLng = "lng";
       this._pointRadius = () => 0.4;
-      this._pointColor = () => "#647cf1";
+      this._pointColor = () => "#2181D5";
       this._pointLabel = () => "";
       this._polygonCapColor = () => "#e0ded5";
-      this._polygonStrokeColor = () => "rgba(255,255,255,.72)";
+      this._polygonStrokeColor = () => "rgba(255,255,255,.98)";
       this._ringLat = "lat";
       this._ringLng = "lng";
       this._ringColor = () => ["rgba(100,124,241,.8)", "rgba(100,124,241,0)"];
@@ -300,8 +300,9 @@
         });
         if (visibleSegments < 3) return;
         context.fillStyle = valueOf(this._polygonCapColor, feature) || "#e0ded5";
-        context.strokeStyle = valueOf(this._polygonStrokeColor, feature) || "rgba(255,255,255,.72)";
-        context.lineWidth = Math.max(0.55, layout.radius / 900);
+        context.strokeStyle = valueOf(this._polygonStrokeColor, feature) || "rgba(255,255,255,.98)";
+        context.lineWidth = Math.max(1.35, layout.radius / 480);
+        context.lineJoin = "round";
         context.fill("evenodd");
         context.stroke();
       });
@@ -320,10 +321,21 @@
       projected.forEach((point) => {
         const rawRadius = Number(valueOf(this._pointRadius, point.item)) || 0.2;
         const radius = clamp(1.5 + rawRadius * 3.2, 1.8, 6.2);
+        context.save();
+        context.beginPath();
+        context.moveTo(point.x, point.y + radius * 0.55);
+        context.lineTo(point.x, point.y + radius + 4.2);
+        context.strokeStyle = "rgba(18,25,28,.82)";
+        context.lineWidth = Math.max(0.8, radius * 0.16);
+        context.stroke();
         context.beginPath();
         context.arc(point.x, point.y, radius, 0, Math.PI * 2);
-        context.fillStyle = valueOf(this._pointColor, point.item) || "#647cf1";
+        context.fillStyle = valueOf(this._pointColor, point.item) || "#2181D5";
         context.fill();
+        context.strokeStyle = "rgba(255,255,255,.98)";
+        context.lineWidth = Math.max(1.2, radius * 0.24);
+        context.stroke();
+        context.restore();
       });
     }
 

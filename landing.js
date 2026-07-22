@@ -41,7 +41,7 @@
   }
 
   function colorFor(job) {
-    return categories[job.category]?.color || "#647cf1";
+    return categories[job.category]?.color || "#2181D5";
   }
 
   function radiusFor(job) {

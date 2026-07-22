@@ -2,21 +2,21 @@
   "use strict";
 
   window.WORK_CATEGORIES = {
-    "设计": { color: "#647CF1" },
-    "开发": { color: "#E97B64" },
-    "人工智能": { color: "#806CC8" },
-    "产品": { color: "#65A38D" },
-    "市场": { color: "#D99C52" },
-    "销售": { color: "#A97862" },
-    "运营": { color: "#71848E" },
-    "游戏": { color: "#A77FC0" },
-    "客服": { color: "#5A8F9D" },
-    "行政": { color: "#9A8778" },
-    "财务": { color: "#B18B4D" },
-    "教育": { color: "#7A9B67" },
-    "医疗": { color: "#C57979" },
-    "写作": { color: "#8E72A8" },
-    "法务": { color: "#677F9F" }
+    "设计": { color: "#F7C31A" },
+    "开发": { color: "#2181D5" },
+    "人工智能": { color: "#48934B" },
+    "产品": { color: "#F3842D" },
+    "市场": { color: "#A77F48" },
+    "销售": { color: "#C12633" },
+    "运营": { color: "#419492" },
+    "游戏": { color: "#E96090" },
+    "客服": { color: "#409291" },
+    "行政": { color: "#CF5A0C" },
+    "财务": { color: "#B31727" },
+    "教育": { color: "#704A95" },
+    "医疗": { color: "#74509A" },
+    "写作": { color: "#A77F48" },
+    "法务": { color: "#454F7C" }
   };
 
   window.WORK_DATA_META = {

@@ -125,11 +125,11 @@ function makeOfflineHtml(sourceHtml) {
   html = html.replace(/    <link rel="icon"[^>]*>\n/, "    <link rel=\"icon\" href=\"icon.svg\" />\n");
   html = html.replace(/    <link rel="preconnect"[^>]*>\n/g, "");
   html = html.replace(
-    "    <link rel=\"stylesheet\" href=\"styles.css\" />",
+    /    <link rel="stylesheet" href="styles\.css(?:\?v=[^"]+)?" \/>/,
     "    <link rel=\"stylesheet\" href=\"styles.css\" />\n    <link rel=\"stylesheet\" href=\"xhs-overrides.css\" />"
   );
   html = html.replace(
-    /    <script src="[^"]*globe\.gl[^"]*"><\/script>\n    <script src="data\.js"><\/script>\n    <script src="data-month\.js"><\/script>\n    <script src="data-remote\.js"><\/script>\n    <script src="data-china\.js"><\/script>\n    <script src="data-locations\.js"><\/script>\n    <script type="module">\n      import \* as THREE from "[^"]*three[^"]*";\n      window\.THREE = THREE;\n      await import\("\.\/explore\.js(?:\?v=[^"]+)?"\);\n    <\/script>/,
+    /    <script src="[^"]*globe\.gl[^"]*"><\/script>\n    <script src="data\.js(?:\?v=[^"]+)?"><\/script>\n    <script src="data-month\.js"><\/script>\n    <script src="data-remote\.js"><\/script>\n    <script src="data-china\.js"><\/script>\n    <script src="data-locations\.js"><\/script>\n    <script type="module">\n      import \* as THREE from "[^"]*three[^"]*";\n      window\.THREE = THREE;\n      await import\("\.\/explore\.js(?:\?v=[^"]+)?"\);\n    <\/script>/,
     [
       "    <script defer src=\"./mode-xhs.js\"></script>",
       "    <script defer src=\"./world-data.js\"></script>",

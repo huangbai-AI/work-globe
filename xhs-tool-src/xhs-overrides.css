@@ -50,8 +50,8 @@ html { touch-action: manipulation; }
 .is-xhs-tool .job-action-primary.is-offline { cursor: pointer; }
 
 .is-xhs-tool .source-window .live-dot {
-  background: #647cf1;
-  box-shadow: 0 0 0 5px rgba(100, 124, 241, 0.09);
+  background: #48934b;
+  box-shadow: 0 0 0 5px rgba(72, 147, 75, 0.1);
 }
 
 @media (max-width: 760px) {
