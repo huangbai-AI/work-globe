@@ -42,8 +42,9 @@ assert.match(styles, /\.landing-copy\s*\{[^}]*top:\s*45\.5%;/s, "宽屏首页标
 assert.match(styles, /@media \(min-width:\s*981px\)[\s\S]*?\.app-header\s*\{[^}]*top:\s*32px;[^}]*padding:\s*0 clamp\(52px,\s*3\.8vw,\s*82px\);/s, "桌面端品牌标志应按标注向左上微调");
 assert.match(styles, /@media \(min-width:\s*981px\)[\s\S]*?\.landing-copy\s*\{[^}]*top:\s*50\.5%;/s, "桌面端标题与按钮组应按标注整体上移");
 assert.match(html, /styles\.css\?v=20260722-position-tune/, "位置微调后应更新样式缓存版本");
-assert.match(html, /explore\.js\?v=20260722-raised-paper-edge/, "国家板块浮雕边缘调整后应使用新的缓存版本");
+assert.match(html, /explore\.js\?v=20260722-northern-europe-home/, "首页北半球视角调整后应使用新的缓存版本");
 assert.match(await readFile(new URL("explore.js", projectRoot), "utf8"), /exploreHomeView\s*=\s*Object\.freeze\(\{\s*lat:\s*50,\s*lng:\s*10\s*\}\)/, "探索页默认视角应正对欧洲中部");
+assert.match(await readFile(new URL("explore.js", projectRoot), "utf8"), /landingHomeView\s*=\s*Object\.freeze\(\{\s*lat:\s*42,\s*lng:\s*10\s*\}\)/, "首页默认视角应让北半球与欧洲面向观众");
 assert.match(html, /class="wordmark-type"\s+src="openwork-wordmark\.png"/, "参考图落地时应继续使用现有小尺寸品牌标志");
 assert.match(styles, /#work-globe \[class\^="float-tooltip-"\][\s\S]*?background:\s*transparent\s*!important;/, "地球组件自带提示层不能保留黑色背景");
 assert.match(styles, /\.map-tooltip\s*\{[\s\S]*?transition:[\s\S]*?opacity 300ms[\s\S]*?transform 300ms/s, "岗位悬浮卡片应使用约 0.3 秒的透明度与缩放动效");

@@ -9,6 +9,7 @@
   const categories = window.WORK_CATEGORIES || {};
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+  const landingHomeView = Object.freeze({ lat: 42, lng: 10 });
   const exploreHomeView = Object.freeze({ lat: 50, lng: 10 });
   const params = xhsMode ? new URLSearchParams() : new URLSearchParams(window.location.search);
   const initialExplore = params.get("view") === "explore"
@@ -1368,8 +1369,8 @@
           width <= 760 && !landscapePhone ? Math.round(height * 0.25) : Math.round(height * 0.25)
         ],
         altitude: width <= 760 ? 2.15 : 0.78,
-        lat: 20,
-        lng: 40
+        lat: landingHomeView.lat,
+        lng: landingHomeView.lng
       };
     }
     if (landscapePhone) {

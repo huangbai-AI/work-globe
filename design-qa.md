@@ -6,6 +6,10 @@
 - 探索页最终截图：`output/design-qa/openwork-raised-paper-explore.png`
 - 移动端最终截图：`output/design-qa/openwork-raised-paper-mobile.png`
 - 宽屏位置微调截图：`output/design-qa/openwork-position-tune-2048x987.png`
+- 北半球首页宽屏截图：`output/design-qa/openwork-northern-europe-home-2048x987.png`
+- 北半球首页桌面截图：`output/design-qa/openwork-northern-europe-home-1536x1024.png`
+- 北半球首页移动端截图：`output/design-qa/openwork-northern-europe-home-390x844.png`
+- 北半球探索页截图：`output/design-qa/openwork-northern-europe-explore-1536x1024.png`
 - 参考与实现同尺寸对照：`output/design-qa/openwork-1536x1024-comparison-pass5.png`
 - 标题与按钮局部对照：`output/design-qa/openwork-hero-comparison-pass5.png`
 - 地球局部对照：`output/design-qa/openwork-globe-comparison-pass5.png`
@@ -25,6 +29,7 @@
 - 板块高度压低为克制的纸板浮雕，侧壁改成暖灰色；地球边缘保留白色高光和柔和光晕。
 - 图钉保持默认小尺寸，悬停后放大；新增贴地浅影，不恢复会遮挡密集区域的白色圆环。
 - 按最新宽屏标注，桌面端品牌标志向左上轻移，标题与入口按钮整体上移；地球和其他布局保持不变。
+- 首页默认视角改为北半球与欧洲朝向观众，欧洲岗位密集区进入主视野，非洲仅保留在画面下部；探索页仍以欧洲中部为中心。
 
 ## 视觉问题闭环
 
