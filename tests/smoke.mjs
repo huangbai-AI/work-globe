@@ -36,8 +36,10 @@ assert.match(styles, /\.landing-title-line\s*\{[^}]*opacity:\s*0;[^}]*translate3
 assert.match(styles, /\.app-page\.is-ui-ready\.is-landing \.landing-title-line\s*\{[^}]*opacity:\s*1;[^}]*translate3d\(0, 0, 0\)/s, "首页标题入场与退场应由同一组可逆状态衔接");
 assert.match(styles, /\.app-page\.is-landing:not\(\.is-ui-ready\) \.shared-earth\s*\{[^}]*opacity:\s*0;[^}]*scale\(0\.945\)/s, "首页地球应从轻微缩小和透明状态渐显");
 assert.match(styles, /\.app-page\.is-explore\.is-transitioning \.landing-title-line\s*\{[^}]*opacity:\s*0;[^}]*translate3d\(-30px, -5px, 0\)/s, "进入探索时标题应连续退场而非突然消失");
-assert.match(styles, /\.primary-entry\s*\{[^}]*width:\s*clamp\(304px, 25\.2vw, 388px\)[^}]*min-height:\s*88px;[^}]*border-radius:\s*999px/s, "桌面入口应使用选定视觉稿中的圆角胶囊构图");
-assert.match(styles, /\.primary-entry\s*\{[^}]*font-size:\s*18px;[^}]*font-weight:\s*620;/s, "入口按钮文字应拥有与胶囊比例协调的字号和字重");
+assert.match(styles, /\.primary-entry\s*\{[^}]*width:\s*clamp\(280px, 21vw, 340px\)[^}]*min-height:\s*76px;[^}]*border-radius:\s*999px/s, "桌面入口应使用更轻巧的圆角胶囊构图");
+assert.match(styles, /\.primary-entry\s*\{[^}]*font-size:\s*16px;[^}]*font-weight:\s*610;/s, "入口按钮文字应拥有与缩小胶囊协调的字号和字重");
+assert.match(styles, /\.landing-copy\s*\{[^}]*top:\s*45\.5%;/s, "宽屏首页标题组应按浏览器真实比例上移");
+assert.match(html, /explore\.js\?v=20260722-browser-tune/, "宽屏地球放大后应使用新的缓存版本");
 assert.match(html, /class="wordmark-type"\s+src="openwork-wordmark\.png"/, "参考图落地时应继续使用现有小尺寸品牌标志");
 assert.match(styles, /#work-globe \[class\^="float-tooltip-"\][\s\S]*?background:\s*transparent\s*!important;/, "地球组件自带提示层不能保留黑色背景");
 assert.match(styles, /\.map-tooltip\s*\{[\s\S]*?transition:[\s\S]*?opacity 300ms[\s\S]*?transform 300ms/s, "岗位悬浮卡片应使用约 0.3 秒的透明度与缩放动效");

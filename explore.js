@@ -1238,7 +1238,7 @@
           landscapePhone ? Math.round(width * 0.2) : width <= 760 ? Math.round(width * 0.12) : Math.round(width * 0.16),
           width <= 760 && !landscapePhone ? Math.round(height * 0.25) : 0
         ],
-        altitude: width <= 760 ? 2.15 : 1.34,
+        altitude: width <= 760 ? 2.15 : 1.14,
         lng: 40
       };
     }

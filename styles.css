@@ -210,7 +210,7 @@ input:focus-visible {
 .landing-copy {
   position: absolute;
   z-index: 20;
-  top: 54%;
+  top: 45.5%;
   left: clamp(56px, 5.2vw, 92px);
   width: min(49vw, 720px);
   transform: translateY(-48%);
@@ -255,19 +255,19 @@ input:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 34px;
-  width: clamp(304px, 25.2vw, 388px);
-  min-height: 88px;
-  margin-top: 48px;
-  padding: 0 9px 0 39px;
+  gap: 28px;
+  width: clamp(280px, 21vw, 340px);
+  min-height: 76px;
+  margin-top: 38px;
+  padding: 0 8px 0 32px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 999px;
   background: var(--ink);
   box-shadow: 0 14px 30px rgba(18, 25, 28, 0.13);
   color: #fcfcfc;
-  font-size: 18px;
-  font-weight: 620;
+  font-size: 16px;
+  font-weight: 610;
   letter-spacing: 0.06em;
   opacity: 0;
   filter: blur(7px);
@@ -306,9 +306,9 @@ input:focus-visible {
 .primary-entry svg {
   position: relative;
   z-index: 1;
-  width: 70px;
-  height: 70px;
-  padding: 21px;
+  width: 60px;
+  height: 60px;
+  padding: 18px;
   border-radius: 50%;
   background: var(--accent);
   color: var(--ink);
