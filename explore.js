@@ -137,10 +137,9 @@
     cardNext: $("#card-next"),
     cardPosition: $("#card-position"),
     cardClose: $("#job-card-close"),
-    cardSource: $("#card-source"),
     cardPosted: $("#card-posted"),
     cardEvidence: $("#card-evidence"),
-    cardCompany: $("#card-company"),
+    cardChannel: $("#card-channel"),
     cardTitle: $("#card-title"),
     cardLocation: $("#card-location"),
     cardSalary: $("#card-salary"),
@@ -243,6 +242,22 @@
 
   function matchingJobs() {
     return jobs.filter(matches).sort((a, b) => (b.attention || 0) - (a.attention || 0));
+  }
+
+  function landingEntrySelection() {
+    const matches = matchingJobs();
+    const preferred = jobs.find((job) => job.id === "arbeitnow-backend-developer-php-postgresql-hamburg-472726")
+      || matches.find((job) => job.mapCity?.includes("Hamburg"))
+      || matches[0];
+    if (!preferred) return null;
+    const nearby = matches.filter((job) => job.mapCity && job.mapCity === preferred.mapCity);
+    const pool = [preferred, ...nearby.filter((job) => job.id !== preferred.id)];
+    return {
+      job: preferred,
+      pool,
+      type: pool.length > 1 ? "cluster" : "job",
+      label: pool.length > 1 ? `${preferred.mapCity} · ${pool.length} 个岗位` : ""
+    };
   }
 
   function pointRadius(job) {
@@ -448,12 +463,11 @@
     els.card.hidden = false;
     els.card.dataset.selectionType = state.selectionType || "job";
     els.card.style.setProperty("--job-color", colorFor(job));
-    els.cardSource.textContent = job.source;
     els.cardPosted.textContent = state.selectionLabel || job.posted;
     els.cardEvidence.textContent = state.selectionType === "country"
       ? "国家岗位"
       : state.selectionType === "cluster" ? "附近合集" : job.evidence;
-    els.cardCompany.textContent = job.company;
+    els.cardChannel.textContent = job.source;
     els.cardTitle.textContent = job.title;
     els.cardLocation.textContent = job.location;
     els.cardSalary.textContent = job.salary;
@@ -1521,7 +1535,15 @@
 
   function enterExplore() {
     if (state.transitioning || state.view === "explore") return;
+    const entry = landingEntrySelection();
     setView("explore", { history: "push" });
+    if (entry) {
+      selectJob(entry.job, {
+        pool: entry.pool,
+        type: entry.type,
+        label: entry.label
+      });
+    }
   }
 
   function exitExplore(history = "push") {

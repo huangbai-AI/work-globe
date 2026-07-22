@@ -9,7 +9,7 @@
     <link rel="icon" href="openwork-mark.png" type="image/png" />
     <link rel="preconnect" href="https://unpkg.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="stylesheet" href="styles.css?v=20260722-position-tune" />
+    <link rel="stylesheet" href="styles.css?v=20260722-direct-job-card" />
     <script src="https://unpkg.com/globe.gl@2.46.1/dist/globe.gl.min.js"></script>
     <script src="data.js?v=20260722-reference-palette"></script>
     <script src="data-month.js"></script>
@@ -19,7 +19,7 @@
     <script type="module">
       import * as THREE from "https://unpkg.com/three@0.185.1/build/three.module.min.js";
       window.THREE = THREE;
-      await import("./explore.js?v=20260722-northern-europe-home");
+      await import("./explore.js?v=20260722-direct-job-card");
     </script>
   </head>
   <body class="app-page is-landing">
@@ -39,7 +39,7 @@
           <span class="landing-title-line">尽在眼前</span>
         </h1>
         <button class="primary-entry" id="start-explore" type="button">
-          <span>探索工作世界</span>
+          <span>探索岗位</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M14 7l5 5-5 5" /></svg>
         </button>
       </section>
@@ -65,13 +65,12 @@
         <button class="job-card-close" id="job-card-close" type="button" aria-label="关闭岗位详情">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
         </button>
-        <span class="job-card-source">来源 · <b id="card-source">X</b></span>
         <div class="job-card-topline">
           <span id="card-posted"></span>
           <span class="evidence-pill" id="card-evidence"></span>
           <span class="card-position" id="card-position"></span>
         </div>
-        <p class="job-card-company" id="card-company"></p>
+        <p class="job-card-channel">来源渠道 · <b id="card-channel"></b></p>
         <h1 id="card-title"></h1>
         <div class="job-card-facts">
           <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5 7-12a7 7 0 1 0-14 0c0 7 7 12 7 12Z" /><circle cx="12" cy="9" r="2" /></svg><b id="card-location"></b></span>

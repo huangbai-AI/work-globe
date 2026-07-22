@@ -869,30 +869,18 @@ input:focus-visible {
   text-align: right;
 }
 
-.job-card-source {
-  position: absolute;
-  top: 23px;
-  right: 64px;
-  max-width: 160px;
-  overflow: hidden;
-  color: var(--ink-faint);
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 0.06em;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.job-card-source b { color: var(--ink-soft); font-weight: 560; }
-
-.job-card-company {
+.job-card-channel {
   margin: 15px 0 4px;
   color: var(--ink-faint);
+  font-family: var(--mono);
   font-size: 10px;
-  font-weight: 650;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
+}
+
+.job-card-channel b {
+  color: var(--ink-soft);
+  font-weight: 650;
 }
 
 .job-card h1 {
@@ -1383,10 +1371,9 @@ input:focus-visible {
   .card-switch-prev { right: 66px; left: auto; }
   .card-switch-next { right: 18px; }
   .card-switch:hover { transform: scale(1.05); }
-  .job-card-source { top: 19px; right: 58px; max-width: 105px; }
   .job-card-topline { gap: 6px; padding-right: 105px; }
   .evidence-pill { display: none; }
-  .job-card-company { margin-top: 17px; }
+  .job-card-channel { margin-top: 17px; }
   .job-card h1 { max-width: 100%; padding-right: 0; font-size: 30px; white-space: normal; }
   .job-card-facts { max-width: 100%; margin-top: 13px; gap: 7px 14px; }
   .job-card-summary { max-width: 100%; margin-top: 14px; font-size: 11px; }
