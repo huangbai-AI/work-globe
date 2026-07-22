@@ -7,8 +7,13 @@ import path from "node:path";
 const execFileAsync = promisify(execFile);
 const projectDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const cli = process.env.ANYSEARCH_CLI || "/Users/a1/.codex/skills/anysearch/scripts/anysearch_cli.js";
-const since = new Date("2026-06-18T00:00:00Z");
-const until = new Date("2026-07-18T23:59:59Z");
+const until = new Date();
+until.setUTCHours(23, 59, 59, 999);
+const since = new Date(until);
+since.setUTCDate(since.getUTCDate() - 29);
+since.setUTCHours(0, 0, 0, 0);
+const dateOnly = (date) => date.toISOString().slice(0, 10);
+const windowLabel = `${dateOnly(since)} 至 ${dateOnly(until)}`;
 
 const locations = [
   "us", "London", "Toronto", "Vancouver", "Berlin", "Munich", "Paris", "Amsterdam",
@@ -355,10 +360,19 @@ async function collectWithConcurrency(items, concurrency) {
 }
 
 const collected = await collectWithConcurrency(queries, 4);
+async function collectSafely(name, collector) {
+  try {
+    return await collector();
+  } catch (error) {
+    process.stderr.write(`${name} 抓取失败：${error.message}\n`);
+    return [];
+  }
+}
+
 const [remoteOkJobs, remotiveJobs, arbeitnowJobs] = await Promise.all([
-  collectRemoteOk(),
-  collectRemotive(),
-  collectArbeitnow()
+  collectSafely("Remote OK", collectRemoteOk),
+  collectSafely("Remotive", collectRemotive),
+  collectSafely("Arbeitnow", collectArbeitnow)
 ]);
 process.stdout.write(`公开职位源：Remote OK ${remoteOkJobs.length}，Remotive ${remotiveJobs.length}，Arbeitnow ${arbeitnowJobs.length}\n`);
 
@@ -371,7 +385,7 @@ combined.forEach((job) => {
 const unique = [...uniqueByRole.values()]
   .sort((a, b) => b.postedAt.localeCompare(a.postedAt) || a.title.localeCompare(b.title));
 
-const output = `(function () {\n  "use strict";\n  const additions = ${JSON.stringify(unique, null, 2)};\n  const existing = new Set((window.WORK_JOBS || []).map((job) => job.sourceUrl));\n  additions.forEach((job) => { if (!existing.has(job.sourceUrl)) window.WORK_JOBS.push(job); });\n  if (window.WORK_DATA_META) {\n    window.WORK_DATA_META.window = "2026-06-18 至 2026-07-18";\n    window.WORK_DATA_META.note = "过去 30 天的公开招聘帖与职位页；地点只使用职位中明确出现的城市、国家或远程范围。";\n    window.WORK_DATA_META.total = window.WORK_JOBS.length;\n  }\n})();\n`;
+const output = `(function () {\n  "use strict";\n  const additions = ${JSON.stringify(unique, null, 2)};\n  const existing = new Set((window.WORK_JOBS || []).map((job) => job.sourceUrl));\n  additions.forEach((job) => { if (!existing.has(job.sourceUrl)) window.WORK_JOBS.push(job); });\n  if (window.WORK_DATA_META) {\n    window.WORK_DATA_META.updatedAt = "${until.toISOString()}";\n    window.WORK_DATA_META.window = "${windowLabel}";\n    window.WORK_DATA_META.note = "过去 30 天的公开招聘帖与职位页；地点只使用职位中明确出现的城市、国家或远程范围。";\n    window.WORK_DATA_META.total = window.WORK_JOBS.length;\n  }\n})();\n`;
 
 await writeFile(path.join(projectDir, "data-month.js"), output, "utf8");
 process.stdout.write(`写入 ${unique.length} 条过去 30 天职位：${path.join(projectDir, "data-month.js")}\n`);

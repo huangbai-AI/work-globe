@@ -3,8 +3,13 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const projectDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const since = new Date("2026-06-18T00:00:00Z");
-const until = new Date("2026-07-18T23:59:59Z");
+const until = new Date();
+until.setUTCHours(23, 59, 59, 999);
+const since = new Date(until);
+since.setUTCDate(since.getUTCDate() - 29);
+since.setUTCHours(0, 0, 0, 0);
+const dateOnly = (date) => date.toISOString().slice(0, 10);
+const windowLabel = `${dateOnly(since)} 至 ${dateOnly(until)}`;
 
 const wwrFeeds = [
   "remote-programming-jobs",
@@ -315,7 +320,7 @@ const unique = [...uniqueMap.values()].sort((a, b) =>
   b.postedAt.localeCompare(a.postedAt) || b.attention - a.attention || a.title.localeCompare(b.title)
 );
 
-const output = `(function () {\n  "use strict";\n  const additions = ${JSON.stringify(unique, null, 2)};\n  const existingIds = new Set((window.WORK_JOBS || []).map((job) => job.id));\n  const existingRoles = new Set((window.WORK_JOBS || []).map((job) => \`${'${job.company}|${job.title}|${job.location}'}\`.toLocaleLowerCase("en")));\n  additions.forEach((job) => {\n    const roleKey = \`${'${job.company}|${job.title}|${job.location}'}\`.toLocaleLowerCase("en");\n    if (!existingIds.has(job.id) && !existingRoles.has(roleKey)) {\n      window.WORK_JOBS.push(job);\n      existingIds.add(job.id);\n      existingRoles.add(roleKey);\n    }\n  });\n  if (window.WORK_DATA_META) {\n    window.WORK_DATA_META.window = "2026-06-18 至 2026-07-18";\n    window.WORK_DATA_META.note = "过去 30 天的公开招聘帖与职位页；新增数据全部为明确远程岗位。";\n    window.WORK_DATA_META.total = window.WORK_JOBS.length;\n    window.WORK_DATA_META.remoteTotal = window.WORK_JOBS.filter((job) => job.remote).length;\n  }\n})();\n`;
+const output = `(function () {\n  "use strict";\n  const additions = ${JSON.stringify(unique, null, 2)};\n  const existingIds = new Set((window.WORK_JOBS || []).map((job) => job.id));\n  const existingRoles = new Set((window.WORK_JOBS || []).map((job) => \`${'${job.company}|${job.title}|${job.location}'}\`.toLocaleLowerCase("en")));\n  additions.forEach((job) => {\n    const roleKey = \`${'${job.company}|${job.title}|${job.location}'}\`.toLocaleLowerCase("en");\n    if (!existingIds.has(job.id) && !existingRoles.has(roleKey)) {\n      window.WORK_JOBS.push(job);\n      existingIds.add(job.id);\n      existingRoles.add(roleKey);\n    }\n  });\n  if (window.WORK_DATA_META) {\n    window.WORK_DATA_META.updatedAt = "${until.toISOString()}";\n    window.WORK_DATA_META.window = "${windowLabel}";\n    window.WORK_DATA_META.note = "过去 30 天的公开招聘帖与职位页；新增数据全部为明确远程岗位。";\n    window.WORK_DATA_META.total = window.WORK_JOBS.length;\n    window.WORK_DATA_META.remoteTotal = window.WORK_JOBS.filter((job) => job.remote).length;\n  }\n})();\n`;
 
 await writeFile(path.join(projectDir, "data-remote.js"), output, "utf8");
 process.stdout.write(`写入 ${unique.length} 条远程职位：${path.join(projectDir, "data-remote.js")}\n`);

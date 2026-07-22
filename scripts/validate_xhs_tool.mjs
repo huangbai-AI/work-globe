@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import vm from "node:vm";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
@@ -115,6 +116,22 @@ async function main() {
     }
     if (!/<button\b[^>]*id=["']card-apply["']/i.test(html)) fail("立即投递必须是可操作按钮");
 
+    const jobSandbox = { window: {} };
+    vm.createContext(jobSandbox);
+    vm.runInContext(contents.get("jobs-data.js") || "", jobSandbox, { filename: "jobs-data.js" });
+    const packagedJobs = jobSandbox.window.WORK_JOBS || [];
+    const recencyEnd = new Date();
+    recencyEnd.setUTCHours(23, 59, 59, 999);
+    const recencyStart = new Date(recencyEnd);
+    recencyStart.setUTCDate(recencyStart.getUTCDate() - 29);
+    recencyStart.setUTCHours(0, 0, 0, 0);
+    if (!packagedJobs.length) fail("离线包中没有岗位数据");
+    if (packagedJobs.some((job) => {
+      if (!job.postedAt) return true;
+      const postedDate = new Date(`${job.postedAt}T00:00:00Z`);
+      return !Number.isFinite(postedDate.getTime()) || postedDate < recencyStart || postedDate > recencyEnd;
+    })) fail("离线包包含超过 30 天或缺少发布日期的岗位");
+
     console.log(JSON.stringify({
       valid: true,
       archive,
@@ -123,6 +140,8 @@ async function main() {
       unpackedBytes,
       scripts,
       offline: true,
+      recentJobs: packagedJobs.length,
+      dataWindow: `${recencyStart.toISOString().slice(0, 10)} 至 ${recencyEnd.toISOString().slice(0, 10)}`,
       syntaxChecked: files.filter((filename) => filename.endsWith(".js")).length
     }, null, 2));
   } finally {

@@ -2,7 +2,25 @@
   "use strict";
 
   const xhsMode = Boolean(window.XHS_TOOL_MODE);
-  const jobs = window.WORK_JOBS || [];
+  const rawJobs = window.WORK_JOBS || [];
+  const recencyEnd = new Date();
+  recencyEnd.setUTCHours(23, 59, 59, 999);
+  const recencyStart = new Date(recencyEnd);
+  recencyStart.setUTCDate(recencyStart.getUTCDate() - 29);
+  recencyStart.setUTCHours(0, 0, 0, 0);
+  const jobs = rawJobs.filter((job) => {
+    if (!job.postedAt) return false;
+    const postedDate = new Date(`${job.postedAt}T00:00:00Z`);
+    return Number.isFinite(postedDate.getTime())
+      && postedDate >= recencyStart
+      && postedDate <= recencyEnd;
+  });
+  window.WORK_JOBS = jobs;
+  if (window.WORK_DATA_META) {
+    window.WORK_DATA_META.window = `${recencyStart.toISOString().slice(0, 10)} 至 ${recencyEnd.toISOString().slice(0, 10)}`;
+    window.WORK_DATA_META.total = jobs.length;
+    window.WORK_DATA_META.remoteTotal = jobs.filter((job) => job.remote).length;
+  }
   const mapJobs = jobs.filter((job) => job.mapPrecision === "city"
     && Number.isFinite(job.lat)
     && Number.isFinite(job.lng));
@@ -243,8 +261,13 @@
 
   function landingEntrySelection() {
     const matches = matchingJobs();
-    const preferred = jobs.find((job) => job.id === "arbeitnow-backend-developer-php-postgresql-hamburg-472726")
-      || matches.find((job) => job.mapCity?.includes("Hamburg"))
+    const preferred = matches.find((job) => (
+      job.mapPrecision === "city"
+      && job.source === "招聘网站"
+      && job.lat >= 35 && job.lat <= 60
+      && job.lng >= -10 && job.lng <= 30
+    ))
+      || matches.find((job) => job.mapPrecision === "city" && job.lat >= 35 && job.lat <= 60 && job.lng >= -10 && job.lng <= 30)
       || matches[0];
     if (!preferred) return null;
     const nearby = matches.filter((job) => job.mapCity && job.mapCity === preferred.mapCity);

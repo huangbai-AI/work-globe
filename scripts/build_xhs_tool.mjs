@@ -46,12 +46,31 @@ function compactJob(job) {
     .map((key) => [key, sanitize(job[key])]));
 }
 
+function recentJobsFor(windowData) {
+  const recencyEnd = new Date();
+  recencyEnd.setUTCHours(23, 59, 59, 999);
+  const recencyStart = new Date(recencyEnd);
+  recencyStart.setUTCDate(recencyStart.getUTCDate() - 29);
+  recencyStart.setUTCHours(0, 0, 0, 0);
+  const jobs = (windowData.WORK_JOBS || [])
+    .filter((job) => {
+      if (!job.postedAt) return false;
+      const postedDate = new Date(`${job.postedAt}T00:00:00Z`);
+      return Number.isFinite(postedDate.getTime())
+        && postedDate >= recencyStart
+        && postedDate <= recencyEnd;
+    });
+  return { jobs, recencyStart, recencyEnd };
+}
+
 function makeJobsScript(windowData) {
-  const jobs = (windowData.WORK_JOBS || []).map(compactJob);
+  const { jobs: recentJobs, recencyStart, recencyEnd } = recentJobsFor(windowData);
+  const jobs = recentJobs.map(compactJob);
   const categories = windowData.WORK_CATEGORIES || {};
   const meta = {
     ...(windowData.WORK_DATA_META || {}),
     total: jobs.length,
+    window: `${recencyStart.toISOString().slice(0, 10)} 至 ${recencyEnd.toISOString().slice(0, 10)}`,
     packagedAt: new Date().toISOString(),
     packageMode: "offline"
   };
@@ -129,7 +148,7 @@ function makeOfflineHtml(sourceHtml) {
     "    <link rel=\"stylesheet\" href=\"styles.css\" />\n    <link rel=\"stylesheet\" href=\"xhs-overrides.css\" />"
   );
   html = html.replace(
-    /    <script src="[^"]*globe\.gl[^"]*"><\/script>\n    <script src="data\.js(?:\?v=[^"]+)?"><\/script>\n    <script src="data-month\.js"><\/script>\n    <script src="data-remote\.js"><\/script>\n    <script src="data-china\.js"><\/script>\n    <script src="data-locations\.js"><\/script>\n    <script type="module">\n      import \* as THREE from "[^"]*three[^"]*";\n      window\.THREE = THREE;\n      await import\("\.\/explore\.js(?:\?v=[^"]+)?"\);\n    <\/script>/,
+    /    <script src="[^"]*globe\.gl[^"]*"><\/script>\n    <script src="data\.js(?:\?v=[^"]+)?"><\/script>\n    <script src="data-month\.js(?:\?v=[^"]+)?"><\/script>\n    <script src="data-remote\.js(?:\?v=[^"]+)?"><\/script>\n    <script src="data-china\.js(?:\?v=[^"]+)?"><\/script>\n    <script src="data-locations\.js(?:\?v=[^"]+)?"><\/script>\n    <script type="module">\n      import \* as THREE from "[^"]*three[^"]*";\n      window\.THREE = THREE;\n      await import\("\.\/explore\.js(?:\?v=[^"]+)?"\);\n    <\/script>/,
     [
       "    <script defer src=\"./mode-xhs.js\"></script>",
       "    <script defer src=\"./world-data.js\"></script>",
@@ -204,11 +223,12 @@ async function main() {
   const zip = spawnSync("zip", ["-q", "-r", archive, "."], { cwd: dist, encoding: "utf8" });
   if (zip.status !== 0) throw new Error(zip.stderr || "压缩失败");
 
-  const cityJobs = (windowData.WORK_JOBS || []).filter((job) =>
+  const recentJobs = recentJobsFor(windowData).jobs;
+  const cityJobs = recentJobs.filter((job) =>
     job.mapPrecision === "city" && Number.isFinite(job.lat) && Number.isFinite(job.lng));
   const archiveSize = (await fs.stat(archive)).size;
   console.log(JSON.stringify({
-    totalJobs: windowData.WORK_JOBS.length,
+    totalJobs: recentJobs.length,
     cityJobs: cityJobs.length,
     countries: features.length,
     files: outputFiles.size,

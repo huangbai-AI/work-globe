@@ -133,7 +133,14 @@ async function fetchText(url) {
 
 async function collectWwrHeadquarters() {
   const result = new Map();
-  const feeds = await Promise.all(wwrFeeds.map((feed) => fetchText(`https://weworkremotely.com/categories/${feed}.rss`)));
+  const feeds = (await Promise.all(wwrFeeds.map(async (feed) => {
+    try {
+      return await fetchText(`https://weworkremotely.com/categories/${feed}.rss`);
+    } catch (error) {
+      process.stderr.write(`跳过 We Work Remotely ${feed}：${error.message}\n`);
+      return "";
+    }
+  }))).filter(Boolean);
   feeds.forEach((xml) => {
     for (const match of xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)) {
       const item = match[1];
