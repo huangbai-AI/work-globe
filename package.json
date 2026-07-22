@@ -5,6 +5,7 @@
   "description": "OpenWork globe job explorer",
   "scripts": {
     "test:smoke": "node tests/smoke.mjs",
+    "test:xhs": "node tests/xhs-offline-smoke.mjs",
     "build:xhs": "node scripts/build_xhs_tool.mjs",
     "validate:xhs": "node scripts/validate_xhs_tool.mjs"
   },

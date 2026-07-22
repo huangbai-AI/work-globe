@@ -53,6 +53,7 @@
       this._atmosphereColor = "#FFFFFF";
       this._showAtmosphere = true;
       this._polygons = [];
+      this._paths = [];
       this._points = [];
       this._rings = [];
       this._pointLat = "lat";
@@ -440,6 +441,15 @@
     polygonStrokeColor(value) { return this._chain("polygonStrokeColor", value); }
     polygonLabel(value) { return this._chain("polygonLabel", value); }
     polygonsTransitionDuration(value) { return this._chain("polygonsTransitionDuration", value); }
+    pathsData(value) { return this._chain("paths", value); }
+    pathPoints(value) { return this._chain("pathPoints", value); }
+    pathPointLat(value) { return this._chain("pathPointLat", value); }
+    pathPointLng(value) { return this._chain("pathPointLng", value); }
+    pathPointAlt(value) { return this._chain("pathPointAlt", value); }
+    pathResolution(value) { return this._chain("pathResolution", value); }
+    pathColor(value) { return this._chain("pathColor", value); }
+    pathStroke(value) { return this._chain("pathStroke", value); }
+    pathTransitionDuration(value) { return this._chain("pathTransitionDuration", value); }
     pointsData(value) { return this._chain("points", value); }
     pointLat(value) { return this._chain("pointLat", value); }
     pointLng(value) { return this._chain("pointLng", value); }
