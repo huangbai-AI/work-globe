@@ -1,0 +1,58 @@
+{
+  "source": {
+    "file": "img_v3_0213r_4af0ac4b-4169-4726-8648-8715c3fba57g.png",
+    "size": [1487, 1058],
+    "sha256": "05507a870c08ddcc1c50f613a64521fdd3b6faec5a6f2854564c2ed160ec4e4d"
+  },
+  "extraction": {
+    "canvas": "空白画布区域精确像素众数",
+    "ocean": "左侧无陆地区域精确像素众数",
+    "land": "地图区域高明度低饱和像素的确定性量化中心",
+    "pins": "右侧图例十四个圆点的圆心像素",
+    "geometry": "以坐标 765,371 的黄色图钉逐像素测量"
+  },
+  "map": {
+    "canvas": "#E2EDF8",
+    "ocean": "#E1ECF7",
+    "surface": "#FDFDFD",
+    "border": "#FFFFFF",
+    "stem": "#434748",
+    "land": [
+      "#E6CCCB",
+      "#CBD6CD",
+      "#C8D4E6",
+      "#E8D9C4",
+      "#D9CEE1",
+      "#E5D2D3",
+      "#CAD6D1",
+      "#E8D3BD",
+      "#C7C8DC",
+      "#E2CDD0"
+    ]
+  },
+  "pins": {
+    "设计": "#F7C31A",
+    "开发": "#2181D5",
+    "人工智能": "#48934B",
+    "产品": "#F3842D",
+    "销售": "#C12633",
+    "运营": "#419492",
+    "医疗": "#74509A",
+    "财务": "#B31727",
+    "客服": "#409291",
+    "教育": "#704A95",
+    "行政": "#CF5A0C",
+    "写作": "#A77F48",
+    "法务": "#454F7C",
+    "游戏": "#E96090"
+  },
+  "pinGeometry": {
+    "sampleCenter": [765, 371],
+    "coreDiameterPx": 15,
+    "outlinePx": 2,
+    "stemLengthPx": 11,
+    "stemWidthPx": 2,
+    "highlight": "top-left",
+    "shadow": "bottom-edge"
+  }
+}

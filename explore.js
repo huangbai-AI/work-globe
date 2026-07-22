@@ -18,14 +18,14 @@
     "#E5D2D3", "#CAD6D1", "#E8D3BD", "#C7C8DC", "#E2CDD0"
   ];
   const oceanColor = "#E1ECF7";
-  const atmosphereColor = "#EAF3FB";
+  const atmosphereColor = "#FFFFFF";
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
   const countryCapCurvatureResolution = 0.75;
   const clusterSplitThreshold = 0.4;
   const pinPalette = [
     "#F7C31A", "#2181D5", "#48934B", "#F3842D", "#C12633",
-    "#419492", "#74509A", "#B31727", "#CF5A0C", "#A77F48",
-    "#454F7C", "#E96090"
+    "#419492", "#74509A", "#B31727", "#409291", "#704A95",
+    "#CF5A0C", "#A77F48", "#454F7C", "#E96090"
   ];
   const brandIconAliases = [
     ["anthropic", "anthropic"], ["replit", "replit"], ["mastercard", "mastercard"],
@@ -1064,25 +1064,34 @@
     const headRadius = clustered
       ? Math.min(1.82, 1.28 + Math.log10(marker.jobs.length + 1) * 0.22)
       : 0.96;
-    const stemLength = clustered ? 0.42 : 0.3;
-    const headPosition = new window.THREE.Vector3(0, 0, stemLength + headRadius * 0.9);
+    const stemLength = headRadius * (clustered ? 0.72 : 1.26);
+    const headPosition = new window.THREE.Vector3(0, 0, stemLength + headRadius * 0.92);
     const stem = new window.THREE.Mesh(
       new window.THREE.CylinderGeometry(clustered ? 0.085 : 0.065, clustered ? 0.085 : 0.065, stemLength, 10),
-      new window.THREE.MeshBasicMaterial({ color: "#283235" })
+      new window.THREE.MeshBasicMaterial({ color: "#434748" })
     );
     stem.rotation.x = Math.PI / 2;
     stem.position.set(0, 0, stemLength / 2);
     group.add(stem);
 
+    const PinHeadMaterial = window.THREE.MeshPhongMaterial || window.THREE.MeshBasicMaterial;
     const head = new window.THREE.Mesh(
       new window.THREE.SphereGeometry(headRadius, 24, 18),
-      new window.THREE.MeshBasicMaterial({ color: marker.color })
+      new PinHeadMaterial({
+        color: marker.color,
+        emissive: marker.color,
+        emissiveIntensity: 0.12,
+        shininess: 54,
+        specular: "#F8FBFF"
+      })
     );
     head.position.copy(headPosition);
+    head.castShadow = true;
+    stem.castShadow = true;
     group.add(head);
 
     const halo = new window.THREE.Mesh(
-      new window.THREE.RingGeometry(headRadius * 0.94, headRadius * 1.14, 32),
+      new window.THREE.RingGeometry(headRadius * 0.96, headRadius * 1.16, 32),
       new window.THREE.MeshBasicMaterial({
         color: "#ffffff",
         transparent: true,
@@ -1382,7 +1391,7 @@
         .bumpImageUrl(null)
         .showAtmosphere(true)
         .atmosphereColor(atmosphereColor)
-        .atmosphereAltitude(0.075)
+        .atmosphereAltitude(0.04)
         .showGraticules(false)
         .polygonsData([])
         .polygonAltitude(countryAltitude)

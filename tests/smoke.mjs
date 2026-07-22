@@ -5,7 +5,12 @@ import * as THREE from "three";
 
 const projectRoot = new URL("../", import.meta.url);
 const html = await readFile(new URL("index.html", projectRoot), "utf8");
+const styles = await readFile(new URL("styles.css", projectRoot), "utf8");
 const localGlobeSource = await readFile(new URL("xhs-tool-src/local-globe.js", projectRoot), "utf8");
+const referencePalette = JSON.parse(await readFile(
+  new URL("design-system/openwork/reference-palette.json", projectRoot),
+  "utf8"
+));
 assert.ok(
   html.indexOf("https://unpkg.com/globe.gl@2.46.1/dist/globe.gl.min.js")
     < html.indexOf("https://unpkg.com/three@0.185.1/build/three.module.min.js"),
@@ -13,10 +18,16 @@ assert.ok(
 );
 assert.doesNotMatch(html, /(?:src=|from )"\.?\/?node_modules\//, "GitHub Pages 不能依赖未发布的 node_modules 文件");
 assert.match(html, /await import\("\.\/explore\.js(?:\?v=[^"]+)?"\)/, "岗位模块应在新版 Three.js 就绪后载入");
-assert.doesNotMatch(localGlobeSource, /createRadialGradient/, "小红书离线版海洋不应重新使用径向渐变");
+const localSphereSource = localGlobeSource.match(/_drawSphere\(context, layout\) \{[\s\S]*?\n    \}\n\n    _polygonRings/)?.[0] || "";
+assert.doesNotMatch(localSphereSource, /createRadialGradient/, "小红书离线版海洋不应重新使用径向渐变");
 assert.match(localGlobeSource, /context\.fillStyle = this\._waterColor/, "小红书离线版海洋应使用统一纯色");
+assert.match(localGlobeSource, /const sheen = context\.createRadialGradient/, "小红书离线版图钉应保留参考图的轻微球面高光");
 assert.match(localGlobeSource, /context\.lineWidth = Math\.max\(1\.35, layout\.radius \/ 480\)/, "小红书离线版国家边界应使用参考图的清晰白色描边");
 assert.match(localGlobeSource, /context\.strokeStyle = "rgba\(255,255,255,\.98\)"/, "小红书离线版图钉应始终保留白色外沿");
+assert.match(styles, /--canvas: #e2edf8;/, "网页画布应使用参考图提取出的精确背景色");
+assert.equal(referencePalette.map.canvas, "#E2EDF8", "提取记录应保留参考图画布主色");
+assert.equal(referencePalette.map.ocean, "#E1ECF7", "提取记录应保留参考图海洋主色");
+assert.equal(Object.keys(referencePalette.pins).length, 14, "提取记录应完整保留参考图的十四种图钉颜色");
 const world = JSON.parse(await readFile(
   new URL("node_modules/globe.gl/example/datasets/ne_110m_admin_0_countries.geojson", projectRoot),
   "utf8"
@@ -266,6 +277,8 @@ assert.equal(samplePin.children[0].position.y, 0, "短针不能纵向偏移");
 assert.equal(samplePin.children[1].position.x, 0, "圆头应与短针保持同轴");
 assert.equal(samplePin.children[1].position.y, 0, "圆头应与短针保持同轴");
 assert.ok(samplePin.children[1].position.z > samplePin.children[0].position.z, "圆头应位于短针正上方");
+assert.ok(samplePin.children[0].geometry.parameters.height >= 0.7, "图钉针脚长度应接近参考图比例，不能退化成无针脚气泡");
+assert.equal(samplePin.children[1].material.type, "MeshPhongMaterial", "图钉圆头应使用轻微球面高光材质");
 assert.equal(samplePin.children[2].geometry.type, "RingGeometry", "岗位气泡应使用轻量光环强化位置感");
 assert.equal(samplePin.children[2].visible, true, "岗位气泡应始终保留参考图中的白色外沿");
 assert.equal(samplePin.children[2].material.color.getHexString(), "ffffff", "岗位气泡白色外沿应与参考图一致");

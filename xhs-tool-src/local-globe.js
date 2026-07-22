@@ -49,7 +49,7 @@
       this._centerLng = 20;
       this._altitude = 1.7;
       this._waterColor = "#E1ECF7";
-      this._atmosphereColor = "#EAF3FB";
+      this._atmosphereColor = "#FFFFFF";
       this._showAtmosphere = true;
       this._polygons = [];
       this._points = [];
@@ -320,20 +320,42 @@
       this._screenPoints = projected;
       projected.forEach((point) => {
         const rawRadius = Number(valueOf(this._pointRadius, point.item)) || 0.2;
-        const radius = clamp(1.5 + rawRadius * 3.2, 1.8, 6.2);
+        const radius = clamp(2.1 + rawRadius * 4.6, 2.7, 7.4);
+        const pinColor = valueOf(this._pointColor, point.item) || "#2181D5";
         context.save();
         context.beginPath();
         context.moveTo(point.x, point.y + radius * 0.55);
-        context.lineTo(point.x, point.y + radius + 4.2);
-        context.strokeStyle = "rgba(18,25,28,.82)";
-        context.lineWidth = Math.max(0.8, radius * 0.16);
+        context.lineTo(point.x, point.y + radius * 2);
+        context.strokeStyle = "#434748";
+        context.lineWidth = Math.max(0.9, radius * 0.2);
         context.stroke();
+
         context.beginPath();
         context.arc(point.x, point.y, radius, 0, Math.PI * 2);
-        context.fillStyle = valueOf(this._pointColor, point.item) || "#2181D5";
+        context.shadowColor = "rgba(18,25,28,.16)";
+        context.shadowBlur = Math.max(1.8, radius * 0.55);
+        context.shadowOffsetY = Math.max(0.8, radius * 0.16);
+        context.fillStyle = pinColor;
+        context.fill();
+        context.shadowColor = "transparent";
+        context.shadowBlur = 0;
+        context.shadowOffsetY = 0;
+
+        const sheen = context.createRadialGradient(
+          point.x - radius * 0.34,
+          point.y - radius * 0.42,
+          radius * 0.04,
+          point.x,
+          point.y,
+          radius * 1.08
+        );
+        sheen.addColorStop(0, "rgba(255,255,255,.38)");
+        sheen.addColorStop(0.42, "rgba(255,255,255,.06)");
+        sheen.addColorStop(1, "rgba(18,25,28,.16)");
+        context.fillStyle = sheen;
         context.fill();
         context.strokeStyle = "rgba(255,255,255,.98)";
-        context.lineWidth = Math.max(1.2, radius * 0.24);
+        context.lineWidth = Math.max(1.35, radius * 0.25);
         context.stroke();
         context.restore();
       });
