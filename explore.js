@@ -9,7 +9,7 @@
   const categories = window.WORK_CATEGORIES || {};
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-  const exploreHomeView = Object.freeze({ lat: 38, lng: -98 });
+  const exploreHomeView = Object.freeze({ lat: 50, lng: 10 });
   const params = xhsMode ? new URLSearchParams() : new URLSearchParams(window.location.search);
   const initialExplore = params.get("view") === "explore"
     || params.has("q")
