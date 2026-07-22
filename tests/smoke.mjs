@@ -39,7 +39,8 @@ assert.match(styles, /\.app-page\.is-explore\.is-transitioning \.landing-title-l
 assert.match(styles, /\.primary-entry\s*\{[^}]*width:\s*clamp\(280px, 21vw, 340px\)[^}]*min-height:\s*76px;[^}]*border-radius:\s*999px/s, "桌面入口应使用更轻巧的圆角胶囊构图");
 assert.match(styles, /\.primary-entry\s*\{[^}]*font-size:\s*16px;[^}]*font-weight:\s*610;/s, "入口按钮文字应拥有与缩小胶囊协调的字号和字重");
 assert.match(styles, /\.landing-copy\s*\{[^}]*top:\s*45\.5%;/s, "宽屏首页标题组应按浏览器真实比例上移");
-assert.match(html, /explore\.js\?v=20260722-browser-tune/, "宽屏地球放大后应使用新的缓存版本");
+assert.match(html, /explore\.js\?v=20260722-us-focus/, "探索页切换到美国视角后应使用新的缓存版本");
+assert.match(await readFile(new URL("explore.js", projectRoot), "utf8"), /exploreHomeView\s*=\s*Object\.freeze\(\{\s*lat:\s*38,\s*lng:\s*-98\s*\}\)/, "探索页默认视角应正对美国本土");
 assert.match(html, /class="wordmark-type"\s+src="openwork-wordmark\.png"/, "参考图落地时应继续使用现有小尺寸品牌标志");
 assert.match(styles, /#work-globe \[class\^="float-tooltip-"\][\s\S]*?background:\s*transparent\s*!important;/, "地球组件自带提示层不能保留黑色背景");
 assert.match(styles, /\.map-tooltip\s*\{[\s\S]*?transition:[\s\S]*?opacity 300ms[\s\S]*?transform 300ms/s, "岗位悬浮卡片应使用约 0.3 秒的透明度与缩放动效");

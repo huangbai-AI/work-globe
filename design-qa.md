@@ -4,9 +4,10 @@
 - 修改前浏览器截图：`output/design-qa/openwork-user-chrome-current.png`
 - 修改后浏览器截图：`output/design-qa/openwork-user-chrome-after.png`
 - 同图对照：`output/design-qa/openwork-user-chrome-comparison.png`
+- 探索页美国默认视角：`output/design-qa/openwork-user-chrome-us-explore.png`
 - 浏览器：用户当前 Chrome，页面真实 CSS 区域 2133 × 1031，设备像素比约 1.8。
 - 密度归一：参考图 3822 × 1854 按设备像素比等比归一到 2133 × 1031；实现截图由浏览器直接输出为 2133 × 1031。
-- 状态：首页入场完成，未进入探索模式。
+- 状态：首页入场完成；进入探索模式后未选择岗位，地球默认正对美国本土。
 
 ## 对照结论
 
@@ -33,6 +34,8 @@
 ## 交互与运行
 
 - 点击“探索工作世界”后可正常进入探索状态。
+- 无选择状态默认定位到美国本土（北纬 38°、西经 98°），美国岗位点位居中且密集可见。
+- 点击重置后会回到同一美国默认视角。
 - 搜索框出现；未选择岗位时不会提前显示岗位卡片。
 - 首页与探索页均无横向或纵向溢出。
 - 新建 Chrome 验证页未出现控制台错误。

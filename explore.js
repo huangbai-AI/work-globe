@@ -9,6 +9,7 @@
   const categories = window.WORK_CATEGORIES || {};
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+  const exploreHomeView = Object.freeze({ lat: 38, lng: -98 });
   const params = xhsMode ? new URLSearchParams() : new URLSearchParams(window.location.search);
   const initialExplore = params.get("view") === "explore"
     || params.has("q")
@@ -589,7 +590,8 @@
   function resetView() {
     clearSelection(false);
     if (state.globe) {
-      state.globe.pointOfView({ lat: 20, lng: 20, altitude: viewLayout("explore").altitude }, reducedMotion ? 0 : 720);
+      const layout = viewLayout("explore");
+      state.globe.pointOfView({ lat: layout.lat, lng: layout.lng, altitude: layout.altitude }, reducedMotion ? 0 : 720);
       stopAutoRotation();
       scheduleAutoRotation(2400);
     }
@@ -1239,6 +1241,7 @@
           width <= 760 && !landscapePhone ? Math.round(height * 0.25) : 0
         ],
         altitude: width <= 760 ? 2.15 : 1.14,
+        lat: 20,
         lng: 40
       };
     }
@@ -1247,12 +1250,14 @@
         return {
           offset: [0, Math.round(height * 0.08)],
           altitude: 1.28,
-          lng: 20
+          lat: exploreHomeView.lat,
+          lng: exploreHomeView.lng
         };
       }
       return {
         offset: [Math.round(-width * 0.08), Math.round(height * 0.2)],
         altitude: 1.66,
+        lat: 20,
         lng: 20
       };
     }
@@ -1260,7 +1265,8 @@
       return {
         offset: [0, width <= 760 ? Math.round(height * 0.17) : Math.round(height * 0.07)],
         altitude: defaultExploreAltitude(),
-        lng: 20
+        lat: exploreHomeView.lat,
+        lng: exploreHomeView.lng
       };
     }
     return {
@@ -1269,6 +1275,7 @@
         width <= 760 ? Math.round(height * 0.31) : Math.round(height * 0.34)
       ],
       altitude: width <= 760 ? 1.82 : 0.92,
+      lat: 20,
       lng: 20
     };
   }
@@ -1305,7 +1312,7 @@
     if (!state.globe) return;
     const layout = viewLayout(view);
     animateOffset(layout.offset, duration);
-    state.globe.pointOfView({ lat: 20, lng: layout.lng, altitude: layout.altitude }, duration);
+    state.globe.pointOfView({ lat: layout.lat, lng: layout.lng, altitude: layout.altitude }, duration);
   }
 
   function stopAutoRotation() {
