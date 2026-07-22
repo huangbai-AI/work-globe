@@ -164,15 +164,15 @@ input:focus-visible {
 .wordmark {
   display: inline-flex;
   align-items: center;
-  gap: 13px;
-  min-width: 44px;
-  min-height: 48px;
+  gap: 11px;
+  min-width: 40px;
+  min-height: 44px;
 }
 
 .wordmark-mark {
   display: block;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
   transition: transform 280ms var(--ease-spring);
 }
@@ -193,7 +193,7 @@ input:focus-visible {
 
 .wordmark-type {
   display: block;
-  width: 180px;
+  width: 156px;
   height: auto;
 }
 
@@ -210,7 +210,7 @@ input:focus-visible {
 .landing-copy {
   position: absolute;
   z-index: 20;
-  top: 50%;
+  top: 54%;
   left: clamp(56px, 5.2vw, 92px);
   width: min(49vw, 720px);
   transform: translateY(-48%);
@@ -222,10 +222,10 @@ input:focus-visible {
   margin: 0;
   color: var(--ink);
   font-family: var(--display);
-  font-size: clamp(72px, 8.1vw, 124px);
+  font-size: clamp(72px, 7.3vw, 112px);
   font-weight: 500;
-  line-height: 0.93;
-  letter-spacing: -0.072em;
+  line-height: 1.14;
+  letter-spacing: -0.045em;
 }
 
 .landing-title-line {
@@ -255,20 +255,20 @@ input:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 42px;
-  width: clamp(284px, 27vw, 388px);
-  min-height: 76px;
-  margin-top: 44px;
-  padding: 0 10px 0 29px;
+  gap: 34px;
+  width: clamp(304px, 25.2vw, 388px);
+  min-height: 88px;
+  margin-top: 48px;
+  padding: 0 9px 0 39px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 3px;
+  border-radius: 999px;
   background: var(--ink);
   box-shadow: 0 14px 30px rgba(18, 25, 28, 0.13);
   color: #fcfcfc;
-  font-size: 15px;
-  font-weight: 560;
-  letter-spacing: 0.045em;
+  font-size: 18px;
+  font-weight: 620;
+  letter-spacing: 0.06em;
   opacity: 0;
   filter: blur(7px);
   transform: translate3d(0, 18px, 0) scale(0.975);
@@ -306,9 +306,9 @@ input:focus-visible {
 .primary-entry svg {
   position: relative;
   z-index: 1;
-  width: 56px;
-  height: 56px;
-  padding: 17px;
+  width: 70px;
+  height: 70px;
+  padding: 21px;
   border-radius: 50%;
   background: var(--accent);
   color: var(--ink);
@@ -1234,8 +1234,17 @@ input:focus-visible {
 
 /* 平板 */
 @media (max-width: 980px) {
-  .landing-copy { left: 42px; width: 49vw; }
-  .landing-copy h1 { font-size: clamp(62px, 8.5vw, 88px); }
+  .landing-copy { top: 56%; left: 42px; width: 49vw; }
+  .landing-copy h1 { font-size: clamp(60px, 8vw, 82px); }
+  .primary-entry {
+    gap: 24px;
+    width: 280px;
+    min-height: 72px;
+    margin-top: 34px;
+    padding: 0 7px 0 32px;
+    font-size: 16px;
+  }
+  .primary-entry svg { width: 58px; height: 58px; padding: 18px; }
   .job-card { width: min(820px, calc(100vw - 130px)); }
   .card-switch-prev { left: -52px; }
   .card-switch-next { right: -52px; }
@@ -1272,7 +1281,7 @@ input:focus-visible {
     margin-top: 30px;
     padding-left: 24px;
     border-radius: 999px;
-    font-size: 13px;
+    font-size: 14px;
   }
   .primary-entry svg { width: 46px; height: 46px; padding: 13px; }
   .landing-footer { display: none; }

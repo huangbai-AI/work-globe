@@ -1,53 +1,45 @@
 # Design QA
 
-- Source visual truth: `/var/folders/lx/6r9vdddj2k98rm7xg5g8hb7h0000gn/T/codex-clipboard-61afe6d3-5065-4dbe-814e-4f9e5d1c5a97.png`
-- Edge-defect references: `/var/folders/lx/6r9vdddj2k98rm7xg5g8hb7h0000gn/T/codex-clipboard-b8fbd351-79e7-493e-97e8-648264085c5d.png` and `/var/folders/lx/6r9vdddj2k98rm7xg5g8hb7h0000gn/T/codex-clipboard-debb0e85-a107-409d-8bd9-ed4bc6966f39.png`
-- Implementation screenshot: `/Users/huangshaoshuai/Documents/New project/work-globe/openwork-qa-desktop.png`
-- Selected-country screenshot: `/tmp/openwork-country-selected-200.png`
-- High-latitude geometry screenshot: `/tmp/openwork-country-edges-075.png`
-- Side-by-side comparison: `/tmp/openwork-palette-comparison.png`
-- Viewport: source 1487 × 1058; implementation captured at 1488 × 1058 and normalized by cropping one right-edge pixel.
-- State: desktop explore view, search keyword empty, all city-precision jobs visible; country selection、country-to-country switching and country-to-job switching also verified.
+- 视觉参考：`/var/folders/zn/896c9d3n7x1bv9tzsmkfvs880000gn/T/codex-clipboard-15d99855-1e26-4ac5-b885-0ffa39ec537c.png`
+- 最终桌面构图：`output/design-qa/openwork-poster-home-final2.png`
+- 最终移动端构图：`output/design-qa/openwork-poster-home-mobile-final.png`
+- 同尺寸对照图：`output/design-qa/openwork-reference-vs-implementation-final.png`
+- 对照尺寸：参考图由 1536 × 1024 等比归一到 809 × 539；实现稿在 809 × 539、首页入场结束状态下截取。
 
-## Full-view comparison evidence
+## 对照结论
 
-- The reference and implementation were placed in one side-by-side comparison image before judging the result.
-- Both now use the same light, low-saturation country family: dusty blush, pale apricot, powder blue, sage, warm stone, and lavender gray.
-- White country boundaries remain clear against every fill, including small European countries and dense African borders.
-- The globe sphere retains its blue-gray gradient and the country plates remain visually separated from it by the existing subtle side shadow.
-- No focused crop was needed: country fills occupy most of both full-view captures and are large enough to compare color, flatness, borders, and separation directly.
+- 构图：保留左侧两行诗性标题、右侧大地球与黑色胶囊按钮的主次关系；地球取景显示欧洲、非洲与西亚，并保持首屏视觉重心。
+- 品牌：按本轮要求将品牌标识缩小到 40px 图形、156px 文字，明显小于参考图，不与标题争夺注意力。
+- 字体：标题使用现有编辑感宋体组合，桌面字号上限 112px，行高 1.14，字距 -0.045em；平板单独收敛到 60–82px。
+- 按钮：恢复圆润胶囊轮廓，保留橙色圆形箭头；桌面、平板与手机分别调整比例，按钮文字始终清楚且可点击。
+- 地球：没有更换现有真实交互地球及数据点，只校准首页位置、海拔和初始经度，以接近视觉稿的取景。
+- 动效：首页标题、按钮、地球继续分层渐显；点击“探索工作世界”后，标题连续退场，地球放大进入探索状态。
 
-## Required fidelity surfaces
+## 检查记录
 
-- Fonts and typography: unchanged and outside this palette-only request; no new wrapping or hierarchy regression is visible.
-- Spacing and layout rhythm: unchanged; header, globe, search dock, and persistent controls keep their existing positions.
-- Colors and visual tokens: the former mid-tone Morandi palette was replaced with ten sampled/inferred light tokens. All tokens have an average RGB channel value of at least 205 and a channel spread no greater than 40, while the six hue groups still prevent adjacent countries from sharing the same apparent family.
-- Selected-country state: the active country keeps the same lightness and increases only HSL saturation by 200% (three times the original, capped at 100%). Selecting a different country restores the previous country before applying the same treatment to the new one; clearing the map restores every country.
-- Image quality and asset fidelity: no new raster or generated assets were required. Country caps remain clean solid fills with no texture, noise, or compression artifacts.
-- Copy and content: unchanged.
+1. 第一轮：地球海拔过低，首屏只看到海洋边缘，判定为 P1 构图问题。
+2. 第二轮：恢复海拔后地球位置偏低，欧洲与非洲仍过于靠右，判定为 P2 取景问题。
+3. 第三轮：取消桌面纵向偏移并将初始经度调到 40°，地球上沿、欧洲和非洲的位置与参考关系一致。
+4. 第四轮：同图对照发现品牌标识和按钮在平板比例下偏大；最终将品牌标识缩小，并单独收敛平板标题与按钮。
 
-## Comparison history
+## 响应与交互
 
-1. Initial finding — P1: the implementation screenshot at `/tmp/openwork-palette-before.png` showed country fills one full lightness tier darker than the reference, especially salmon, ochre, green, and lavender regions.
-2. Fix: replaced the ten country tokens with lighter reference-derived values while preserving the existing adjacency graph, hue grouping, white strokes, raised cap altitude, and globe material.
-3. Cache correction: versioned the dynamic `explore.js` import so an already-open browser cannot retain the previous palette after a normal reload.
-4. Post-fix evidence: `/Users/huangshaoshuai/Documents/New project/work-globe/openwork-qa-desktop.png` and `/tmp/openwork-palette-comparison.png` show the corrected light palette. Browser console check returned no errors.
-5. Interaction refinement: browser verification captured the selected-country treatment and no console errors. The regression test switches between two countries and confirms the former country returns to its exact base color while the new country receives the 200% saturation increase.
-6. Geometry refinement: polygon cap curvature resolution was reduced from Globe.gl's 5-degree default to 0.75 degrees. The denser spherical tessellation prevents the long triangular facets visible around large and high-latitude countries from cutting through the globe or neighboring boundaries.
+- 390 × 844：无横向或纵向溢出；标题、按钮和地球依次纵向展开。
+- 809 × 539：页面主体保持隐藏溢出，无可见滚动条；标题、地球和按钮完整落在首屏。
+- 点击入口后：页面进入探索状态，搜索框出现，未选择岗位时不显示岗位卡片。
+- 键盘焦点、减少动态效果和现有链接语义保持不变。
 
-## Findings
+## 自动检查
 
-- No remaining P0, P1, or P2 issues in the requested country-color scope.
-- [P3] The implementation background is warmer than the blue-tinted reference canvas, but it was intentionally left unchanged because the request targets country fills only.
+- `npm run test:smoke`：通过。
+- `npm run build:xhs`：通过，1495 条岗位打包完成。
+- `npm run validate:xhs`：通过，离线包结构和脚本语法有效。
+- `git diff --check`：通过。
 
-## Automated evidence
+## 剩余差异
 
-- 177 country polygons load successfully.
-- More than 100 shared-border neighbor pairs remain detected and every pair avoids the same palette index.
-- The Americas still use at least eight palette entries.
-- The new test asserts at least eight distinct light country colors and prevents a return to darker or highly saturated fills.
-- Country selection tests assert a 200% saturation increase (capped at 100%) with unchanged lightness, single-selection restoration when switching countries, and full restoration when clearing the map.
-- Country geometry tests assert cap curvature tessellation at 0.75 degrees or finer, in addition to closed country rings.
-- Existing country borders, raised plates, marker scaling, aggregation, filtering, and interaction tests pass.
+- 无 P0、P1、P2 问题。
+- P3：参考图使用少量示意图钉，实现页面显示真实岗位数据，因此欧洲点位更密集；这是数据真实性带来的刻意差异。
+- P3：参考图中的地球带有生成图质感，实现仍为可旋转、可搜索的实时 3D 地球；色彩和构图已匹配，但没有牺牲交互去复刻静态纹理。
 
 final result: passed
