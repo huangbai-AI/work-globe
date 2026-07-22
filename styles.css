@@ -1242,9 +1242,9 @@ input:focus-visible {
 /* 3:2 首页主视觉：大标题与局部地球保持更强的编辑构图 */
 @media (min-width: 981px) {
   .app-header {
-    top: 58px;
+    top: 32px;
     height: 108px;
-    padding: 0 clamp(76px, 5vw, 108px);
+    padding: 0 clamp(52px, 3.8vw, 82px);
   }
 
   .wordmark { gap: 14px; }
@@ -1258,7 +1258,7 @@ input:focus-visible {
   }
 
   .landing-copy {
-    top: 53%;
+    top: 50.5%;
     left: clamp(76px, 5vw, 108px);
     width: min(42vw, 650px);
     transform: translateY(-48%);

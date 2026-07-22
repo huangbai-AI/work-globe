@@ -5,6 +5,7 @@
 - 首页最终截图：`output/design-qa/openwork-raised-paper-edge-final.png`
 - 探索页最终截图：`output/design-qa/openwork-raised-paper-explore.png`
 - 移动端最终截图：`output/design-qa/openwork-raised-paper-mobile.png`
+- 宽屏位置微调截图：`output/design-qa/openwork-position-tune-2048x987.png`
 - 参考与实现同尺寸对照：`output/design-qa/openwork-1536x1024-comparison-pass5.png`
 - 标题与按钮局部对照：`output/design-qa/openwork-hero-comparison-pass5.png`
 - 地球局部对照：`output/design-qa/openwork-globe-comparison-pass5.png`
@@ -23,6 +24,7 @@
 - 国家之间使用直接贴住顶面的连续暖白上沿；灰色只来自板块自身的侧壁厚度，不再单独绘制错位灰线。
 - 板块高度压低为克制的纸板浮雕，侧壁改成暖灰色；地球边缘保留白色高光和柔和光晕。
 - 图钉保持默认小尺寸，悬停后放大；新增贴地浅影，不恢复会遮挡密集区域的白色圆环。
+- 按最新宽屏标注，桌面端品牌标志向左上轻移，标题与入口按钮整体上移；地球和其他布局保持不变。
 
 ## 视觉问题闭环
 

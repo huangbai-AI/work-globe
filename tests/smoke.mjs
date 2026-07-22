@@ -39,6 +39,9 @@ assert.match(styles, /\.app-page\.is-explore\.is-transitioning \.landing-title-l
 assert.match(styles, /\.primary-entry\s*\{[^}]*width:\s*clamp\(280px, 21vw, 340px\)[^}]*min-height:\s*76px;[^}]*border-radius:\s*999px/s, "桌面入口应使用更轻巧的圆角胶囊构图");
 assert.match(styles, /\.primary-entry\s*\{[^}]*font-size:\s*16px;[^}]*font-weight:\s*610;/s, "入口按钮文字应拥有与缩小胶囊协调的字号和字重");
 assert.match(styles, /\.landing-copy\s*\{[^}]*top:\s*45\.5%;/s, "宽屏首页标题组应按浏览器真实比例上移");
+assert.match(styles, /@media \(min-width:\s*981px\)[\s\S]*?\.app-header\s*\{[^}]*top:\s*32px;[^}]*padding:\s*0 clamp\(52px,\s*3\.8vw,\s*82px\);/s, "桌面端品牌标志应按标注向左上微调");
+assert.match(styles, /@media \(min-width:\s*981px\)[\s\S]*?\.landing-copy\s*\{[^}]*top:\s*50\.5%;/s, "桌面端标题与按钮组应按标注整体上移");
+assert.match(html, /styles\.css\?v=20260722-position-tune/, "位置微调后应更新样式缓存版本");
 assert.match(html, /explore\.js\?v=20260722-raised-paper-edge/, "国家板块浮雕边缘调整后应使用新的缓存版本");
 assert.match(await readFile(new URL("explore.js", projectRoot), "utf8"), /exploreHomeView\s*=\s*Object\.freeze\(\{\s*lat:\s*50,\s*lng:\s*10\s*\}\)/, "探索页默认视角应正对欧洲中部");
 assert.match(html, /class="wordmark-type"\s+src="openwork-wordmark\.png"/, "参考图落地时应继续使用现有小尺寸品牌标志");
