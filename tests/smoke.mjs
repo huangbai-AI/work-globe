@@ -31,6 +31,7 @@ assert.match(styles, /\.job-card::\-webkit-scrollbar\s*\{[^}]*display:\s*none;/s
 assert.match(html, /class="wordmark-type"\s+src="openwork-wordmark\.png"/, "页头应使用生成并抠图后的 OpenWork 文字标志");
 assert.match(styles, /\.wordmark-type\s*\{[^}]*width:\s*156px;/s, "OpenWork 文字标志应按选定参考图收成更克制的尺寸");
 assert.match(styles, /\.landing-copy h1\s*\{[^}]*font-size:\s*clamp\(72px, 7\.3vw, 112px\)[^}]*line-height:\s*1\.14;[^}]*letter-spacing:\s*-0\.045em;/s, "首页标题应使用选定视觉稿中的舒展行距与克制字距");
+assert.match(styles, /@media \(max-width:\s*760px\)[\s\S]*?\.landing-copy h1\s*\{[^}]*line-height:\s*1\.08;/s, "移动端标题两行之间应保留舒展且不相碰的行距");
 assert.equal((html.match(/class="landing-title-line"/g) || []).length, 2, "首页标题应拆成两行依次浮现");
 assert.match(styles, /\.landing-title-line\s*\{[^}]*opacity:\s*0;[^}]*translate3d\(-18px, 24px, 0\)[^}]*opacity 760ms/s, "首页标题应使用上浮并渐显的入场动效");
 assert.match(styles, /\.app-page\.is-ui-ready\.is-landing \.landing-title-line\s*\{[^}]*opacity:\s*1;[^}]*translate3d\(0, 0, 0\)/s, "首页标题入场与退场应由同一组可逆状态衔接");
@@ -45,7 +46,7 @@ assert.match(html, /<span>探索岗位<\/span>/, "首页按钮应使用更直接
 assert.doesNotMatch(html, /job-card-source|id="card-source"/, "卡片右上角不应重复显示来源信息");
 assert.doesNotMatch(html, /job-card-topline|card-posted|card-evidence|card-position/, "岗位卡片顶部的信息栏应完整移除");
 assert.match(html, /class="job-card-channel">来源渠道 · <b id="card-channel"><\/b>/, "来源渠道应显示在标题上方的轻量标签中");
-assert.match(html, /styles\.css\?v=20260722-card-cleanup/, "卡片顶部清理后应更新样式缓存版本");
+assert.match(html, /styles\.css\?v=20260722-mobile-leading/, "移动端标题行距调整后应更新样式缓存版本");
 assert.match(html, /explore\.js\?v=20260722-direct-job-card/, "岗位直达调整后应更新脚本缓存版本");
 const exploreSource = await readFile(new URL("explore.js", projectRoot), "utf8");
 assert.match(exploreSource, /exploreHomeView\s*=\s*Object\.freeze\(\{\s*lat:\s*50,\s*lng:\s*10\s*\}\)/, "探索页默认视角应正对欧洲中部");

@@ -1308,7 +1308,7 @@ input:focus-visible {
     transform: none;
   }
 
-  .landing-copy h1 { max-width: 365px; font-size: clamp(52px, 15vw, 68px); line-height: 0.96; letter-spacing: -0.065em; }
+  .landing-copy h1 { max-width: 365px; font-size: clamp(52px, 15vw, 68px); line-height: 1.08; letter-spacing: -0.065em; }
   .primary-entry {
     width: min(300px, calc(100vw - 40px));
     min-height: 62px;

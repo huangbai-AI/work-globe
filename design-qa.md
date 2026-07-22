@@ -1,5 +1,9 @@
 # Design QA
 
+- 本轮移动端行距参考：`/var/folders/zn/896c9d3n7x1bv9tzsmkfvs880000gn/T/TemporaryItems/NSIRD_screencaptureui_3ecWc9/截屏2026-07-22 21.45.49.png`
+- 本轮移动端实现截图：`output/design-qa/openwork-mobile-leading-390x844.jpg`
+- 本轮移动端标题局部对照：`output/design-qa/openwork-mobile-leading-comparison.jpg`
+- 本轮实现视口：390 × 844、1 倍密度。参考截图为 894 × 774，去除左侧应用边栏后，将首页标题区域归一化到相同宽度进行局部比较。
 - 本轮顶部栏删除参考：`/Users/a1/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/wxid_67kb4xju005n21_3fe5/temp/InputTemp/c89749ba-a80d-4639-8d1b-b1b8f52aa8ab.png`
 - 本轮浏览器实现截图：`output/design-qa/openwork-card-cleanup-desktop.jpg`
 - 本轮卡片同状态对照：`output/design-qa/openwork-card-cleanup-comparison.jpg`
@@ -42,6 +46,7 @@
 - 首页入口文案改为“探索岗位”；点击后直接选中汉堡的 Arbeitnow 岗位合集并显示完整卡片，不再经过空白探索状态。
 - 卡片右上角重复的来源信息已删除；标题上方原公司眉题改为“来源渠道 · Arbeitnow”，公司名称继续保留在岗位摘要中。
 - 卡片顶部的城市合集、岗位数量、合集标签与序号信息栏已完整删除；关闭按钮与来源渠道眉题保留，正文自然上移。
+- 移动端首页两行标题的行高由 0.96 调整为 1.08；字形不再相碰，按钮、字号和地球位置保持原有比例。
 
 ## 视觉问题闭环
 
@@ -55,6 +60,7 @@
 8. P1：首页入口曾先进入无卡片状态。现已把按钮改为“探索岗位”，点击后直接呈现欧洲岗位卡片。
 9. 本轮全屏与卡片局部对照未发现新的 P0、P1 或 P2 视觉问题。
 10. P2：卡片顶部信息栏占据过多纵向空间。现已删除对应结构、样式与渲染逻辑；浏览器同状态对照确认没有遗留空白或错位。
+11. P2：移动端两行标题原先行距过紧，笔画视觉上接近粘连。现已增加行高，并在 390 × 844 的真实浏览器视口下确认层次清楚、页面无溢出。
 
 ## 交互与兼容
 
