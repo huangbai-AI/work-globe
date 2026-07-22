@@ -1,10 +1,11 @@
 # Design QA
 
 - 视觉参考：`/var/folders/zn/896c9d3n7x1bv9tzsmkfvs880000gn/T/codex-clipboard-15d99855-1e26-4ac5-b885-0ffa39ec537c.png`
+- 浏览器真实窗口截图：`output/design-qa/openwork-real-browser-left.png`
 - 最终桌面构图：`output/design-qa/openwork-poster-home-final2.png`
 - 最终移动端构图：`output/design-qa/openwork-poster-home-mobile-final.png`
 - 同尺寸对照图：`output/design-qa/openwork-reference-vs-implementation-final.png`
-- 对照尺寸：参考图由 1536 × 1024 等比归一到 809 × 539；实现稿在 809 × 539、首页入场结束状态下截取。
+- 对照尺寸：视觉稿对照使用 809 × 539 等比画布；最终页面另外在浏览器真实 1280 × 720 窗口、首页入场结束状态下复核，未再使用临时尺寸限制。
 
 ## 对照结论
 
@@ -25,7 +26,7 @@
 ## 响应与交互
 
 - 390 × 844：无横向或纵向溢出；标题、按钮和地球依次纵向展开。
-- 809 × 539：页面主体保持隐藏溢出，无可见滚动条；标题、地球和按钮完整落在首屏。
+- 浏览器真实 1280 × 720：标题为 93.44px，按钮约 323 × 88px，品牌标识约 207 × 44px；页面无横向或纵向溢出。
 - 点击入口后：页面进入探索状态，搜索框出现，未选择岗位时不显示岗位卡片。
 - 键盘焦点、减少动态效果和现有链接语义保持不变。
 
