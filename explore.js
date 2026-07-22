@@ -1546,13 +1546,7 @@
   function initialize() {
     if (xhsMode) {
       document.body.classList.add("is-xhs-tool");
-      const dates = jobs.map((job) => job.postedAt).filter(Boolean).sort();
-      const latestDate = dates[dates.length - 1] || "本期";
-      const quietWindow = $(".quiet-window");
-      const sourceWindow = $(".source-window span");
       const footer = $(".landing-footer");
-      if (quietWindow) quietWindow.textContent = "离线精选版";
-      if (sourceWindow) sourceWindow.textContent = `数据截至 ${latestDate}`;
       if (footer) footer.innerHTML = "<span>本地岗位数据</span><span class=\"footer-dot\"></span><span>无需联网 · 定期更新</span>";
     }
     setView(state.view, { instant: true, force: true });

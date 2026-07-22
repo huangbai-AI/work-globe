@@ -9,7 +9,7 @@
     <link rel="icon" href="openwork-mark.png" type="image/png" />
     <link rel="preconnect" href="https://unpkg.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="stylesheet" href="styles.css?v=20260722-exact-palette-pins" />
+    <link rel="stylesheet" href="styles.css?v=20260722-minimal-landing" />
     <script src="https://unpkg.com/globe.gl@2.46.1/dist/globe.gl.min.js"></script>
     <script src="data.js?v=20260722-reference-palette"></script>
     <script src="data-month.js"></script>
@@ -31,29 +31,18 @@
           <span class="wordmark-mark" aria-hidden="true"><img src="openwork-mark.png" alt="" /></span>
           <span class="wordmark-copy"><b>OpenWork</b><small>Global Job Atlas</small></span>
         </a>
-        <div class="header-status" aria-live="polite">
-          <span class="quiet-window landing-reveal"><i></i>最近 30 天</span>
-          <span class="source-window explore-reveal">
-            <i class="live-dot" aria-hidden="true"></i>
-            <span>岗位信号 · 最近 30 天</span>
-          </span>
-        </div>
       </header>
 
       <section class="landing-copy landing-reveal" aria-labelledby="landing-title">
-        <p class="landing-kicker"><span>OpenWork</span><em>001</em></p>
         <h1 id="landing-title">转动地球，<br />找到正在发生<br />的工作。</h1>
-        <p class="landing-lead">从城市坐标出发，发现世界各地真实发布的工作机会。</p>
         <button class="primary-entry" id="start-explore" type="button">
           <span>探索工作世界</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M14 7l5 5-5 5" /></svg>
         </button>
-        <p class="landing-footnote"><span aria-hidden="true"></span>每一个点，都落在真实城市</p>
       </section>
 
       <section class="earth-stage shared-earth" id="earth-stage" aria-label="全球工作地图">
         <div id="work-globe" aria-hidden="true"></div>
-        <div class="landing-orbit-note landing-reveal" aria-hidden="true"><span>拖动地球</span><i></i><span>沿城市寻找机会</span></div>
         <div class="globe-empty" id="globe-empty" hidden>
           <p>地球暂时没有载入，但仍可在下方搜索岗位。</p>
         </div>

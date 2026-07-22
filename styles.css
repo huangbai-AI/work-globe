@@ -205,52 +205,6 @@ input:focus-visible {
   text-transform: uppercase;
 }
 
-.header-status {
-  display: grid;
-  min-width: 210px;
-  min-height: 44px;
-  align-items: center;
-  justify-items: end;
-}
-
-.header-status > * { grid-area: 1 / 1; }
-
-.quiet-window,
-.source-window {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  min-height: 38px;
-  color: var(--ink-faint);
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.08em;
-}
-
-.quiet-window i,
-.live-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 5px var(--accent-soft);
-}
-
-.source-window {
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(252, 252, 252, 0.76);
-  backdrop-filter: blur(18px) saturate(112%);
-}
-
-.live-dot {
-  width: 5px;
-  height: 5px;
-  background: var(--sage);
-  box-shadow: 0 0 0 5px rgba(72, 147, 75, 0.13);
-}
-
 /* 首页文案 */
 .landing-copy {
   position: absolute;
@@ -266,35 +220,6 @@ input:focus-visible {
 .app-page.is-ui-ready .app-header,
 .app-page.is-ui-ready .landing-copy { animation-play-state: running; }
 
-.landing-kicker {
-  display: inline-grid;
-  grid-template-columns: auto auto;
-  align-items: center;
-  gap: 14px;
-  margin: 0 0 27px;
-  color: var(--ink-soft);
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.landing-kicker span { display: inline-flex; align-items: center; gap: 11px; }
-.landing-kicker span::before {
-  width: 30px;
-  height: 1px;
-  background: var(--ink-soft);
-  content: "";
-}
-
-.landing-kicker em {
-  padding: 5px 7px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--ink-faint);
-  font-style: normal;
-}
-
 .landing-copy h1 {
   margin: 0;
   color: var(--ink);
@@ -303,16 +228,6 @@ input:focus-visible {
   font-weight: 500;
   line-height: 0.99;
   letter-spacing: -0.065em;
-}
-
-.landing-lead {
-  max-width: 430px;
-  margin: 30px 0 0;
-  color: var(--ink-soft);
-  font-size: 15px;
-  font-weight: 410;
-  line-height: 1.8;
-  letter-spacing: 0.015em;
 }
 
 .primary-entry {
@@ -370,22 +285,6 @@ input:focus-visible {
 .primary-entry:hover svg { background: var(--accent); transform: translateX(2px) rotate(-6deg); }
 .primary-entry:active { transform: translateY(0) scale(0.985); }
 
-.landing-footnote {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 20px 0 0;
-  color: var(--ink-faint);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-}
-
-.landing-footnote span {
-  width: 17px;
-  height: 1px;
-  background: var(--line-strong);
-}
-
 .landing-footer {
   position: fixed;
   z-index: 20;
@@ -406,27 +305,6 @@ input:focus-visible {
   height: 3px;
   border-radius: 50%;
   background: currentColor;
-}
-
-.landing-orbit-note {
-  position: absolute;
-  z-index: 4;
-  right: clamp(34px, 6vw, 104px);
-  bottom: clamp(36px, 7vh, 80px);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--ink-faint);
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.landing-orbit-note i {
-  width: 22px;
-  height: 1px;
-  background: var(--line-strong);
 }
 
 /* 持续存在的地球 */
@@ -509,9 +387,7 @@ input:focus-visible {
 
 /* 首页到地图的连续转场 */
 .landing-copy,
-.landing-footer,
-.landing-orbit-note,
-.quiet-window {
+.landing-footer {
   opacity: 1;
   visibility: visible;
   filter: blur(0);
@@ -523,9 +399,7 @@ input:focus-visible {
 }
 
 .app-page.is-explore .landing-copy,
-.app-page.is-explore .landing-footer,
-.app-page.is-explore .landing-orbit-note,
-.app-page.is-explore .quiet-window {
+.app-page.is-explore .landing-footer {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -539,9 +413,7 @@ input:focus-visible {
 
 .app-page.is-explore .landing-copy { transform: translate(-42px, -50%); }
 .app-page.is-explore .landing-footer { transform: translateY(12px); }
-.app-page.is-explore .landing-orbit-note { transform: translateX(16px); }
 
-.source-window,
 .reset-view,
 .search-zone {
   opacity: 0;
@@ -555,11 +427,9 @@ input:focus-visible {
     visibility 0s linear 380ms;
 }
 
-.source-window { transform: translateY(-7px); }
 .reset-view { transform: translateY(-8px) scale(0.94); }
 .search-zone { transform: translateY(26px) scale(0.985); transform-origin: center bottom; }
 
-.app-page.is-explore .source-window,
 .app-page.is-explore .reset-view,
 .app-page.is-explore .search-zone {
   opacity: 1;
@@ -1194,8 +1064,6 @@ input:focus-visible {
 @media (max-width: 980px) {
   .landing-copy { left: 46px; width: 47vw; }
   .landing-copy h1 { font-size: clamp(53px, 7.5vw, 77px); }
-  .landing-lead { max-width: 360px; font-size: 14px; }
-  .landing-orbit-note { display: none; }
   .job-card { width: min(820px, calc(100vw - 130px)); }
   .card-switch-prev { left: -52px; }
   .card-switch-next { right: -52px; }
@@ -1216,10 +1084,6 @@ input:focus-visible {
   .wordmark-mark { width: 37px; height: 37px; }
   .wordmark-copy b { font-size: 14px; }
   .wordmark-copy small { display: none; }
-  .header-status { min-width: 140px; }
-  .quiet-window,
-  .source-window { font-size: 7px; }
-  .source-window { min-height: 34px; padding: 0 10px; }
 
   .landing-copy {
     top: 116px;
@@ -1230,12 +1094,9 @@ input:focus-visible {
     animation-name: mobile-copy-arrive;
   }
 
-  .landing-kicker { margin-bottom: 18px; font-size: 8px; }
   .landing-copy h1 { max-width: 365px; font-size: clamp(46px, 13.5vw, 63px); line-height: 1.01; letter-spacing: -0.06em; }
-  .landing-lead { max-width: 320px; margin-top: 20px; font-size: 13px; line-height: 1.7; }
   .primary-entry { min-width: 194px; min-height: 56px; margin-top: 25px; }
   .primary-entry svg { width: 40px; height: 40px; padding: 11px; }
-  .landing-footnote { margin-top: 15px; font-size: 9px; }
   .landing-footer { display: none; }
   .shared-earth::before { top: 35%; right: -28%; width: 132vw; }
   .app-page.is-explore .landing-copy { transform: translateX(-30px); }
@@ -1307,10 +1168,7 @@ input:focus-visible {
   .app-header { height: 58px; padding: 0 18px; }
   .wordmark-mark { width: 34px; height: 34px; }
   .landing-copy { top: 50%; right: auto; left: 28px; width: 44vw; transform: translateY(-47%); animation-name: copy-arrive; }
-  .landing-kicker { margin-bottom: 12px; }
   .landing-copy h1 { font-size: clamp(37px, 6.5vw, 58px); }
-  .landing-lead,
-  .landing-footnote { display: none; }
   .primary-entry { min-height: 50px; margin-top: 17px; }
   .shared-earth::before { top: 0; right: -5%; width: 70vw; }
   .reset-view { top: 66px; right: 18px; }
@@ -1343,10 +1201,8 @@ input:focus-visible {
 
 @media (max-width: 380px) {
   .app-header { padding-right: 15px; padding-left: 15px; }
-  .header-status { min-width: 122px; }
   .landing-copy { right: 16px; left: 16px; }
   .landing-copy h1 { font-size: 45px; }
-  .landing-lead { font-size: 12px; }
   .job-card { width: calc(100vw - 20px); }
   .job-action { padding: 0 13px; font-size: 9px; }
 }

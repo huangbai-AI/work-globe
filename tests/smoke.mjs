@@ -187,6 +187,11 @@ assert.deepEqual(
 assert.ok(mainlandJobs.every((job) => /^https:\/\/(jobs\.apple\.com|apply\.careers\.microsoft\.com|nvidia\.wd5\.myworkdayjobs\.com)\//.test(job.sourceUrl)), "中国大陆岗位应保留官方申请链接");
 
 assert.equal(window.document.body.classList.contains("is-explore"), true);
+assert.equal(
+  window.document.querySelectorAll(".header-status, .landing-kicker, .landing-lead, .landing-footnote, .landing-orbit-note").length,
+  0,
+  "首页应移除时间状态、标题前缀、说明文案与地球操作提示"
+);
 assert.equal(window.document.querySelectorAll("#category-toggle, #category-menu").length, 0, "底部应只保留搜索框，不再显示类型筛选");
 assert.equal(window.document.querySelector("#job-card").hidden, false);
 assert.ok(globeState.objects.length > 0, "岗位圆钉数据应载入");
