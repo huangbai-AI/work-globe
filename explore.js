@@ -1427,7 +1427,7 @@
     return {
       offset: [
         0,
-        width <= 760 ? Math.round(height * 0.31) : Math.round(height * 0.34)
+        width <= 760 ? Math.round(height * 0.43) : Math.round(height * 0.34)
       ],
       altitude: width <= 760 ? 1.82 : 0.92,
       lat: 20,
@@ -1515,7 +1515,7 @@
     els.body.classList.toggle("is-landing", view === "landing");
     els.body.classList.toggle("is-explore", view === "explore");
     els.body.classList.toggle("is-transitioning", duration > 0);
-    document.title = view === "explore" ? "寻找工作｜OpenWork" : "OpenWork｜全球工作，尽在眼前";
+    document.title = view === "explore" ? "寻找工作｜OpenWork" : "OpenWork｜全球工作 此刻近在眼前";
 
     if (view === "landing") {
       closeResults();

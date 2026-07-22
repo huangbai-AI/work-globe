@@ -4,6 +4,7 @@ import { JSDOM } from "jsdom";
 
 const root = new URL("../xhs-tool-dist/", import.meta.url);
 const html = await readFile(new URL("index.html", root), "utf8");
+const xhsOverrides = await readFile(new URL("xhs-overrides.css", root), "utf8");
 const dom = new JSDOM(html, {
   runScripts: "outside-only",
   pretendToBeVisual: true,
@@ -42,6 +43,9 @@ await new Promise((resolve) => window.setTimeout(resolve, 180));
 const empty = window.document.querySelector("#globe-empty");
 const canvas = window.document.querySelector("#work-globe canvas");
 assert.ok(canvas, "小红书离线包必须创建地球画布");
+assert.match(xhsOverrides, /--xhs-safe-top:\s*max\(env\(safe-area-inset-top, 0px\), 28px\)/, "小红书页头应为刘海区域保留不少于 28px 的安全距离");
+assert.match(xhsOverrides, /\.is-xhs-tool \.job-card\s*\{[^}]*top:\s*calc\(88px \+ var\(--xhs-safe-top\)\)/s, "小红书岗位卡片应跟随顶部安全区下移");
+assert.match(xhsOverrides, /\.is-xhs-tool\.is-explore \.shared-earth\s*\{[^}]*translate3d\(0, 18px, 0\)/s, "小红书探索页地球应与岗位卡片留出清晰间隔");
 assert.equal(empty.hidden, true, "地球初始化成功后不应显示加载失败提示");
 assert.equal(window.document.body.classList.contains("is-ui-ready"), true, "离线地球就绪后应完成首屏入场");
 assert.ok(drawCount > 0, "离线地球必须实际执行海洋、国家与图钉绘制");

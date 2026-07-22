@@ -1329,7 +1329,7 @@ input:focus-visible {
     width: calc(100vw - 28px);
     min-height: 296px;
     max-height: calc(100dvh - 188px);
-    padding: 21px 20px 20px;
+    padding: 21px 32px 20px;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1338,10 +1338,16 @@ input:focus-visible {
 
   .job-card::before { top: 24px; height: 30px; }
   .job-card-close { top: 13px; right: 13px; width: 40px; height: 40px; }
-  .card-switch { top: auto; bottom: 18px; width: 40px; height: 40px; transform: none; }
-  .card-switch-prev { right: 66px; left: auto; }
-  .card-switch-next { right: 18px; }
-  .card-switch:hover { transform: scale(1.05); }
+  .card-switch {
+    top: 50%;
+    bottom: auto;
+    width: 44px;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+  .card-switch-prev { right: auto; left: -12px; }
+  .card-switch-next { right: -12px; left: auto; }
+  .card-switch:hover { transform: translateY(-50%) scale(1.05); }
   .job-card-channel { margin-top: 17px; }
   .job-card h1 { max-width: 100%; padding-right: 0; font-size: 30px; white-space: normal; }
   .job-card-facts { max-width: 100%; margin-top: 13px; gap: 7px 14px; }
@@ -1354,7 +1360,7 @@ input:focus-visible {
     gap: 8px;
     margin-top: auto;
     padding-top: 18px;
-    padding-right: 92px;
+    padding-right: 0;
   }
   .job-action { min-height: 46px; padding: 0 16px; }
   .job-action-primary { min-width: 124px; }
@@ -1401,7 +1407,7 @@ input:focus-visible {
   .job-card-summary,
   .job-card-tags { display: none !important; }
   .job-card-actions { padding-top: 13px; }
-  .card-switch { bottom: 13px; }
+  .card-switch { top: 50%; bottom: auto; }
   .search-zone { right: 12px; bottom: 10px; left: auto; width: min(52vw, 600px); padding: 0; }
   .search-dock,
   .result-sheet { width: 100%; }

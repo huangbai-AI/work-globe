@@ -6,7 +6,10 @@
   cursor: grab;
 }
 
-:root { --xhs-keyboard-inset: 0px; }
+:root {
+  --xhs-keyboard-inset: 0px;
+  --xhs-safe-top: max(env(safe-area-inset-top, 0px), 28px);
+}
 
 html { touch-action: manipulation; }
 
@@ -35,7 +38,20 @@ html { touch-action: manipulation; }
 
 @media (max-width: 760px) {
   .is-xhs-tool .app-header {
-    padding-top: env(safe-area-inset-top, 0px);
+    height: calc(72px + var(--xhs-safe-top));
+    padding: var(--xhs-safe-top) 19px 0;
+  }
+
+  .is-xhs-tool .job-card {
+    top: calc(88px + var(--xhs-safe-top));
+  }
+
+  .is-xhs-tool.is-explore .shared-earth {
+    transform: translate3d(0, 18px, 0);
+  }
+
+  .is-xhs-tool .reset-view {
+    top: calc(82px + var(--xhs-safe-top));
   }
 
   .is-xhs-tool .landing-footer {
