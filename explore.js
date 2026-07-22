@@ -19,9 +19,9 @@
     "#E5D2D3", "#CAD6D1", "#E8D3BD", "#C7C8DC", "#E2CDD0"
   ];
   const oceanColor = "#C4DAE6";
-  const atmosphereColor = "#F7FBFF";
-  const countryStrokeColor = "rgba(255,252,246,0.99)";
-  const countrySideBase = "rgba(185,199,201,0.78)";
+  const atmosphereColor = "#FFFFFF";
+  const countryStrokeColor = "#FFFDF7";
+  const countrySideBase = "#C5C4BD";
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
   const countryCapCurvatureResolution = 0.35;
   const clusterSplitThreshold = 0.4;
@@ -841,7 +841,12 @@
       .filter((ring) => Array.isArray(ring) && ring.length > 2)
       .map((ring) => ({
         countryKey: feature._countryKey,
-        points: ring.map(([lng, lat]) => ({ lat, lng, altitude: 0.012 }))
+        layer: "top-edge",
+        color: countryStrokeColor,
+        stroke: 2.05,
+        // 暖白上沿直接贴在国家顶面。灰色厚度由国家板块自身的侧壁生成，
+        // 不再额外绘制一条错位灰线，避免出现两条彼此分离的轮廓。
+        points: ring.map(([lng, lat]) => ({ lat, lng, altitude: 0.00624 }))
       })));
     return prepared;
   }
@@ -857,24 +862,18 @@
     const color = landColor(feature);
     if (!window.THREE) return null;
     if (!countryMaterials.has(color)) {
-      const CountryMaterial = window.THREE.MeshLambertMaterial || window.THREE.MeshPhongMaterial || window.THREE.MeshBasicMaterial;
+      const CountryMaterial = window.THREE.MeshBasicMaterial || window.THREE.MeshPhongMaterial || window.THREE.MeshLambertMaterial;
       const materialOptions = {
         color,
-        emissive: color,
-        emissiveIntensity: 0.3,
         side: window.THREE.DoubleSide
       };
-      if (!window.THREE.MeshLambertMaterial && window.THREE.MeshPhongMaterial) {
-        materialOptions.specular = color;
-        materialOptions.shininess = 3;
-      }
       countryMaterials.set(color, new CountryMaterial(materialOptions));
     }
     return countryMaterials.get(color);
   }
 
   function countryAltitude(feature) {
-    return feature._countryKey === state.selectedCountryKey ? 0.011 : 0.008;
+    return feature._countryKey === state.selectedCountryKey ? 0.009 : 0.0062;
   }
 
   function countrySideColor(feature) {
@@ -909,26 +908,37 @@
     const lights = state.globe.lights?.() || [];
     lights.forEach((light) => {
       if (light.isAmbientLight) {
-        light.intensity = 1.35;
-        light.color?.set("#F2F7FA");
+        light.intensity = 1.04;
+        light.color?.set("#EFF6FA");
       }
       if (light.isDirectionalLight) {
-        light.intensity = 0.42;
-        light.color?.set("#FFF8ED");
-        light.position?.set(-120, 220, 180);
+        light.intensity = 0.62;
+        light.color?.set("#FFF7EA");
+        light.position?.set(-180, 240, 220);
         light.castShadow = true;
-        light.shadow.bias = -0.00022;
-        light.shadow.normalBias = 0.018;
+        light.shadow.bias = -0.00012;
+        light.shadow.normalBias = 0.08;
         light.shadow.mapSize.set(2048, 2048);
-        light.shadow.camera.near = 50;
-        light.shadow.camera.far = 460;
+        light.shadow.camera.near = 10;
+        light.shadow.camera.far = 520;
+        light.shadow.camera.left = -180;
+        light.shadow.camera.right = 180;
+        light.shadow.camera.top = 180;
+        light.shadow.camera.bottom = -180;
+        light.shadow.camera.updateProjectionMatrix?.();
       }
     });
     const scene = state.globe.scene?.();
     if (scene?.add && window.THREE?.HemisphereLight && !scene.getObjectByName?.("openwork-soft-fill")) {
-      const softFill = new window.THREE.HemisphereLight("#FFFDF8", "#DDEBF3", 1.05);
+      const softFill = new window.THREE.HemisphereLight("#FFFDF8", "#C9DCE8", 0.78);
       softFill.name = "openwork-soft-fill";
       scene.add(softFill);
+    }
+    if (scene?.add && window.THREE?.DirectionalLight && !scene.getObjectByName?.("openwork-rim-light")) {
+      const rimLight = new window.THREE.DirectionalLight("#DDEEFF", 0.34);
+      rimLight.name = "openwork-rim-light";
+      rimLight.position.set(220, 80, -180);
+      scene.add(rimLight);
     }
     scene?.traverse((object) => {
       if (!object.isMesh) return;
@@ -940,6 +950,42 @@
       object.castShadow = true;
       object.receiveShadow = true;
     });
+    if (
+      scene?.add
+      && window.THREE?.SphereGeometry
+      && window.THREE?.MeshPhongMaterial
+      && !scene.getObjectByName?.("openwork-ocean-sheen")
+    ) {
+      const sheenMaterial = new window.THREE.MeshPhongMaterial({
+        color: "#000000",
+        specular: "#FFFFFF",
+        shininess: 20,
+        transparent: true,
+        opacity: 0.045,
+        blending: window.THREE.AdditiveBlending,
+        depthWrite: false,
+        side: window.THREE.FrontSide
+      });
+      const sheen = new window.THREE.Mesh(
+        new window.THREE.SphereGeometry(100.72, 96, 64),
+        sheenMaterial
+      );
+      sheen.name = "openwork-ocean-sheen";
+      sheen.castShadow = false;
+      sheen.receiveShadow = false;
+      sheen.renderOrder = 1;
+      scene.add(sheen);
+      if (window.THREE?.TextureLoader && window.THREE?.RepeatWrapping) {
+        new window.THREE.TextureLoader().load("ocean-paper-bump.png", (texture) => {
+          texture.wrapS = window.THREE.RepeatWrapping;
+          texture.wrapT = window.THREE.RepeatWrapping;
+          texture.repeat.set(4, 2);
+          sheenMaterial.bumpMap = texture;
+          sheenMaterial.bumpScale = 0.22;
+          sheenMaterial.needsUpdate = true;
+        });
+      }
+    }
   }
 
   async function loadLand() {
@@ -1510,7 +1556,7 @@
         .bumpImageUrl(null)
         .showAtmosphere(true)
         .atmosphereColor(atmosphereColor)
-        .atmosphereAltitude(0.06)
+        .atmosphereAltitude(0.025)
         .showGraticules(false)
         .polygonsData([])
         .polygonAltitude(countryAltitude)
@@ -1527,8 +1573,8 @@
         .pathPointLng("lng")
         .pathPointAlt("altitude")
         .pathResolution(0.5)
-        .pathColor(() => countryStrokeColor)
-        .pathStroke(0.14)
+        .pathColor("color")
+        .pathStroke("stroke")
         .pathTransitionDuration(0)
         .pointsData([])
         .pointLat("mapLat")
@@ -1547,7 +1593,7 @@
         .objectsData([])
         .objectLat("mapLat")
         .objectLng("mapLng")
-        .objectAltitude(() => 0.0085)
+        .objectAltitude(() => 0.019)
         .objectFacesSurface(true)
         .objectThreeObject(markerObject)
         .objectLabel(xhsMode ? tooltip : () => "")
@@ -1560,18 +1606,12 @@
         .onGlobeClick(clearFromGlobe)
         .onGlobeReady(hideLoading);
 
-      if (window.THREE?.MeshLambertMaterial || window.THREE?.MeshPhongMaterial || window.THREE?.MeshBasicMaterial) {
-        const OceanMaterial = window.THREE.MeshLambertMaterial || window.THREE.MeshPhongMaterial || window.THREE.MeshBasicMaterial;
+      if (window.THREE?.MeshBasicMaterial || window.THREE?.MeshPhongMaterial || window.THREE?.MeshLambertMaterial) {
+        const OceanMaterial = window.THREE.MeshBasicMaterial || window.THREE.MeshPhongMaterial || window.THREE.MeshLambertMaterial;
         const oceanMaterialOptions = {
           color: oceanColor,
-          emissive: oceanColor,
-          emissiveIntensity: 0.18,
           side: window.THREE.FrontSide
         };
-        if (!window.THREE.MeshLambertMaterial && window.THREE.MeshPhongMaterial) {
-          oceanMaterialOptions.specular = oceanColor;
-          oceanMaterialOptions.shininess = 4;
-        }
         state.globe.globeMaterial(new OceanMaterial(oceanMaterialOptions));
       }
 
@@ -1587,9 +1627,9 @@
       if (material) {
         material.color?.set(oceanColor);
         if (material.emissive) material.emissive.set(oceanColor);
-        if ("emissiveIntensity" in material) material.emissiveIntensity = 0.18;
+        if ("emissiveIntensity" in material) material.emissiveIntensity = 0;
         if (material.specular) material.specular.set(oceanColor);
-        if ("shininess" in material) material.shininess = 4;
+        if ("shininess" in material) material.shininess = 0;
         material.needsUpdate = true;
       }
 

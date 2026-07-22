@@ -399,13 +399,17 @@ input:focus-visible {
 .app-page.is-explore .shared-earth::before { opacity: 0.6; transform: translate(-13%, -10%) scale(1.14); }
 
 .app-page #work-globe canvas {
-  filter: drop-shadow(-12px 18px 38px rgba(79, 111, 132, 0.14));
+  filter:
+    drop-shadow(-4px -6px 4px rgba(255, 255, 255, 0.65))
+    drop-shadow(-16px 22px 38px rgba(76, 105, 122, 0.2));
   transition: filter 720ms var(--ease-out);
 }
 
 .app-page.is-landing #work-globe canvas {
   cursor: default;
-  filter: drop-shadow(-16px 22px 48px rgba(79, 111, 132, 0.17));
+  filter:
+    drop-shadow(-5px -7px 5px rgba(255, 255, 255, 0.72))
+    drop-shadow(-20px 28px 52px rgba(70, 102, 122, 0.24));
 }
 .app-page.is-explore #work-globe canvas { cursor: grab; }
 .app-page.is-explore #work-globe canvas:active { cursor: grabbing; }
