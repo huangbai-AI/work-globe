@@ -531,18 +531,22 @@
     renderCard(job);
     const hasCityPoint = job.mapPrecision === "city" && Number.isFinite(job.mapLat) && Number.isFinite(job.mapLng);
     const layout = viewLayout("explore");
-    animateOffset(layout.offset, reducedMotion ? 0 : 760);
+    if (!options.skipCamera) {
+      animateOffset(layout.offset, reducedMotion ? 0 : 760);
+      if (state.globe && hasCityPoint) {
+        state.globe.pointOfView({ lat: job.mapLat, lng: job.mapLng, altitude: layout.altitude }, reducedMotion ? 0 : 900);
+      }
+    }
     if (state.globe && hasCityPoint) {
       state.globe
         .ringsData([job])
-        .ringColor(() => [hexToRgba(colorFor(job), 0.88), hexToRgba(colorFor(job), 0)])
-        .pointOfView({ lat: job.mapLat, lng: job.mapLng, altitude: layout.altitude }, reducedMotion ? 0 : 900);
+        .ringColor(() => [hexToRgba(colorFor(job), 0.88), hexToRgba(colorFor(job), 0)]);
     } else {
       state.globe?.ringsData([]);
     }
     stopAutoRotation();
     scheduleAutoRotation(2600);
-    syncUrl();
+    if (!options.skipUrl) syncUrl();
   }
 
   function selectPointJob(marker, event) {
@@ -1442,6 +1446,10 @@
     return progress >= 1 ? 1 : 1 - Math.pow(2, -10 * progress);
   }
 
+  function smootherStep(progress) {
+    return progress * progress * progress * (progress * (progress * 6 - 15) + 10);
+  }
+
   function animateOffset(target, duration) {
     if (!state.globe) return;
     if (state.offsetAnimation) cancelAnimationFrame(state.offsetAnimation);
@@ -1466,9 +1474,52 @@
     state.offsetAnimation = requestAnimationFrame(frame);
   }
 
-  function applyViewLayout(view, duration = 0) {
+  function animateViewLayout(layout, duration) {
     if (!state.globe) return;
-    const layout = viewLayout(view);
+    if (state.offsetAnimation) cancelAnimationFrame(state.offsetAnimation);
+    const fromOffset = [...state.offset];
+    const fromView = state.globe.pointOfView() || layout;
+    const longitudeDistance = ((layout.lng - fromView.lng + 540) % 360) - 180;
+    if (!duration) {
+      state.offset = [...layout.offset];
+      state.globe.globeOffset(state.offset);
+      state.globe.pointOfView({ lat: layout.lat, lng: layout.lng, altitude: layout.altitude }, 0);
+      state.offsetAnimation = 0;
+      return;
+    }
+    const started = performance.now();
+    const frame = (now) => {
+      const progress = Math.min(1, (now - started) / duration);
+      const eased = smootherStep(progress);
+      state.offset = [
+        fromOffset[0] + (layout.offset[0] - fromOffset[0]) * eased,
+        fromOffset[1] + (layout.offset[1] - fromOffset[1]) * eased
+      ];
+      state.globe.globeOffset(state.offset);
+      state.globe.pointOfView({
+        lat: fromView.lat + (layout.lat - fromView.lat) * eased,
+        lng: fromView.lng + longitudeDistance * eased,
+        altitude: fromView.altitude + (layout.altitude - fromView.altitude) * eased
+      }, 0);
+      if (progress < 1) state.offsetAnimation = requestAnimationFrame(frame);
+      else state.offsetAnimation = 0;
+    };
+    state.offsetAnimation = requestAnimationFrame(frame);
+  }
+
+  function applyViewLayout(view, duration = 0, focusJob = null) {
+    if (!state.globe) return;
+    const baseLayout = viewLayout(view);
+    const canFocusJob = focusJob?.mapPrecision === "city"
+      && Number.isFinite(focusJob.mapLat)
+      && Number.isFinite(focusJob.mapLng);
+    const layout = canFocusJob
+      ? { ...baseLayout, lat: focusJob.mapLat, lng: focusJob.mapLng }
+      : baseLayout;
+    if (!xhsMode && window.innerWidth >= 981) {
+      animateViewLayout(layout, duration);
+      return;
+    }
     animateOffset(layout.offset, duration);
     state.globe.pointOfView({ lat: layout.lat, lng: layout.lng, altitude: layout.altitude }, duration);
   }
@@ -1512,7 +1563,9 @@
 
   function setView(view, options = {}) {
     if (view === state.view && !options.force) return;
-    const duration = reducedMotion || options.instant ? 0 : 920;
+    const duration = reducedMotion || options.instant
+      ? 0
+      : (!xhsMode && window.innerWidth >= 981 ? 1080 : 920);
     state.view = view;
     state.transitioning = duration > 0;
     els.body.classList.toggle("is-landing", view === "landing");
@@ -1538,7 +1591,7 @@
       els.card.hidden = true;
     }
 
-    applyViewLayout(view, duration);
+    applyViewLayout(view, duration, options.focusJob || null);
     if (state.globe) refreshMarkers();
     if (options.history) syncUrl(options.history);
 
@@ -1552,6 +1605,18 @@
   function enterExplore() {
     if (state.transitioning || state.view === "explore") return;
     const entry = landingEntrySelection();
+    const useUnifiedDesktopTransition = Boolean(entry) && !xhsMode && window.innerWidth >= 981;
+    if (useUnifiedDesktopTransition) {
+      selectJob(entry.job, {
+        pool: entry.pool,
+        type: entry.type,
+        label: entry.label,
+        skipCamera: true,
+        skipUrl: true
+      });
+      setView("explore", { history: "push", focusJob: entry.job });
+      return;
+    }
     setView("explore", { history: "push" });
     if (entry) {
       selectJob(entry.job, {

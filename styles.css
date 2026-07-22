@@ -22,6 +22,7 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-spring: cubic-bezier(0.2, 0.86, 0.24, 1.08);
+  --ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);
   font-family: var(--sans);
   font-synthesis: none;
 }
@@ -1217,7 +1218,7 @@ input:focus-visible {
   }
 
   .landing-copy {
-    top: 50.5%;
+    top: 48.5%;
     left: clamp(76px, 5vw, 108px);
     width: min(42vw, 650px);
     transform: translateY(-48%);
@@ -1232,6 +1233,34 @@ input:focus-visible {
   }
 
   .landing-title-line { white-space: nowrap; }
+
+  .app-page.is-explore.is-transitioning .landing-copy {
+    transform: translate(-26px, -51%);
+    transition-duration: 620ms;
+    transition-timing-function: var(--ease-cinematic);
+  }
+
+  .app-page.is-explore.is-transitioning .landing-title-line {
+    filter: blur(8px);
+    transform: translate3d(-24px, -10px, 0) scale(0.982);
+    transition-duration: 500ms, 620ms, 500ms;
+    transition-timing-function: var(--ease-in), var(--ease-cinematic), var(--ease-in);
+  }
+
+  .app-page.is-explore.is-transitioning .landing-title-line:nth-child(2) {
+    transition-delay: 45ms;
+  }
+
+  .app-page.is-explore.is-transitioning .primary-entry {
+    transform: translate3d(-14px, -6px, 0) scale(0.975);
+    transition-duration: 220ms, 220ms, 520ms, 220ms, 420ms, 420ms;
+    transition-timing-function: ease, ease, var(--ease-cinematic), ease, var(--ease-in), var(--ease-in);
+    transition-delay: 0s, 0s, 65ms, 0s, 65ms, 65ms;
+  }
+
+  .app-page.is-explore.is-transitioning .job-card {
+    animation-delay: 380ms;
+  }
 
   .primary-entry {
     width: clamp(380px, 27.5vw, 420px);
