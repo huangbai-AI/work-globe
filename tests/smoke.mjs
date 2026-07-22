@@ -28,7 +28,8 @@ assert.doesNotMatch(localPointSource, /strokeStyle\s*=\s*"rgba\(255,255,255,\.98
 assert.match(styles, /--canvas: #e2edf8;/, "网页画布应使用参考图提取出的精确背景色");
 assert.match(styles, /\.job-card\.is-details-open\s*\{[^}]*overflow-x:\s*hidden;/s, "展开岗位详情时不应出现横向滚动");
 assert.match(styles, /\.job-card::\-webkit-scrollbar\s*\{[^}]*display:\s*none;/s, "岗位卡片滚动条应保持隐藏");
-assert.match(styles, /\.wordmark-copy b\s*\{[^}]*font-size:\s*20px;/s, "OpenWork 文字标志应保持足够醒目的字号");
+assert.match(html, /class="wordmark-type"\s+src="openwork-wordmark\.png"/, "页头应使用生成并抠图后的 OpenWork 文字标志");
+assert.match(styles, /\.wordmark-type\s*\{[^}]*width:\s*168px;/s, "OpenWork 文字标志应保持足够醒目的尺寸");
 assert.match(styles, /#work-globe \[class\^="float-tooltip-"\][\s\S]*?background:\s*transparent\s*!important;/, "地球组件自带提示层不能保留黑色背景");
 assert.match(styles, /\.map-tooltip\s*\{[\s\S]*?transition:[\s\S]*?opacity 300ms[\s\S]*?transform 300ms/s, "岗位悬浮卡片应使用约 0.3 秒的透明度与缩放动效");
 assert.match(styles, /\.map-tooltip\s*\{[\s\S]*?box-shadow:[\s\S]*?0 18px 46px rgba\(38, 49, 48, 0\.14\)/s, "岗位悬浮卡片应使用克制的常规阴影");

@@ -188,7 +188,8 @@ async function main() {
     ["world-data.js", `(function(){\"use strict\";window.WORLD_COUNTRIES=${JSON.stringify(features)};})();\n`],
     ["explore.js", makeOfflineApp(sourceApp)],
     ["icon.svg", await fs.readFile(path.join(source, "icon.svg"), "utf8")],
-    ["openwork-mark.png", await fs.readFile(path.join(root, "openwork-mark.png"))]
+    ["openwork-mark.png", await fs.readFile(path.join(root, "openwork-mark.png"))],
+    ["openwork-wordmark.png", await fs.readFile(path.join(root, "openwork-wordmark.png"))]
   ]);
 
   assertOfflineBundle(outputFiles);

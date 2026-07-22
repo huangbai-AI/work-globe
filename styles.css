@@ -188,17 +188,17 @@ input:focus-visible {
 
 .wordmark-copy {
   display: grid;
-  gap: 2px;
+  gap: 3px;
 }
 
-.wordmark-copy b {
-  font-size: 20px;
-  font-weight: 680;
-  line-height: 0.98;
-  letter-spacing: -0.025em;
+.wordmark-type {
+  display: block;
+  width: 168px;
+  height: auto;
 }
 
 .wordmark-copy small {
+  padding-left: 3px;
   color: var(--ink-faint);
   font-family: var(--mono);
   font-size: 7px;
@@ -1154,7 +1154,7 @@ input:focus-visible {
   .app-header { height: 72px; padding: env(safe-area-inset-top, 0px) 19px 0; }
   .wordmark { gap: 9px; }
   .wordmark-mark { width: 37px; height: 37px; }
-  .wordmark-copy b { font-size: 16px; }
+  .wordmark-type { width: 134px; }
   .wordmark-copy small { display: none; }
 
   .landing-copy {
