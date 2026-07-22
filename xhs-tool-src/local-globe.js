@@ -48,8 +48,8 @@
       this._centerLat = 20;
       this._centerLng = 20;
       this._altitude = 1.7;
-      this._waterColor = "#c8d6d7";
-      this._atmosphereColor = "#b9cccf";
+      this._waterColor = "#C9DDE3";
+      this._atmosphereColor = "#DCE9E9";
       this._showAtmosphere = true;
       this._polygons = [];
       this._points = [];
@@ -257,20 +257,9 @@
       context.save();
       if (this._showAtmosphere) {
         context.shadowColor = this._atmosphereColor;
-        context.shadowBlur = Math.max(14, layout.radius * 0.09);
+        context.shadowBlur = Math.max(10, layout.radius * 0.045);
       }
-      const gradient = context.createRadialGradient(
-        layout.cx - layout.radius * 0.3,
-        layout.cy - layout.radius * 0.34,
-        layout.radius * 0.08,
-        layout.cx,
-        layout.cy,
-        layout.radius
-      );
-      gradient.addColorStop(0, "#edf7f7");
-      gradient.addColorStop(0.58, this._waterColor);
-      gradient.addColorStop(1, "#aebbbd");
-      context.fillStyle = gradient;
+      context.fillStyle = this._waterColor;
       context.beginPath();
       context.arc(layout.cx, layout.cy, layout.radius, 0, Math.PI * 2);
       context.fill();

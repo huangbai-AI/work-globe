@@ -5,6 +5,7 @@ import * as THREE from "three";
 
 const projectRoot = new URL("../", import.meta.url);
 const html = await readFile(new URL("index.html", projectRoot), "utf8");
+const localGlobeSource = await readFile(new URL("xhs-tool-src/local-globe.js", projectRoot), "utf8");
 assert.ok(
   html.indexOf("https://unpkg.com/globe.gl@2.46.1/dist/globe.gl.min.js")
     < html.indexOf("https://unpkg.com/three@0.185.1/build/three.module.min.js"),
@@ -12,6 +13,8 @@ assert.ok(
 );
 assert.doesNotMatch(html, /(?:src=|from )"\.?\/?node_modules\//, "GitHub Pages 不能依赖未发布的 node_modules 文件");
 assert.match(html, /await import\("\.\/explore\.js(?:\?v=[^"]+)?"\)/, "岗位模块应在新版 Three.js 就绪后载入");
+assert.doesNotMatch(localGlobeSource, /createRadialGradient/, "小红书离线版海洋不应重新使用径向渐变");
+assert.match(localGlobeSource, /context\.fillStyle = this\._waterColor/, "小红书离线版海洋应使用统一纯色");
 const world = JSON.parse(await readFile(
   new URL("node_modules/globe.gl/example/datasets/ne_110m_admin_0_countries.geojson", projectRoot),
   "utf8"
@@ -52,6 +55,7 @@ const globeState = {
   polygonAltitudeAccessor: null,
   polygonCapCurvatureResolution: null,
   objectAltitudeAccessor: null,
+  globeMaterial: null,
   pov: { lat: 20, lng: 20, altitude: 1.22 },
   offset: [0, 0]
 };
@@ -79,7 +83,13 @@ function createGlobe() {
     renderer: () => ({ setPixelRatio() {}, shadowMap: { enabled: false, type: null } }),
     scene: () => ({ traverse() {} }),
     lights: () => [],
-    globeMaterial: () => material,
+    globeMaterial(value) {
+      if (value) {
+        globeState.globeMaterial = value;
+        return proxy;
+      }
+      return globeState.globeMaterial || material;
+    },
     pointOfView(value) {
       if (!value) return globeState.pov;
       globeState.pov = { ...globeState.pov, ...value };
@@ -168,6 +178,8 @@ assert.equal(window.document.querySelectorAll("#category-toggle, #category-menu"
 assert.equal(window.document.querySelector("#job-card").hidden, false);
 assert.ok(globeState.objects.length > 0, "岗位圆钉数据应载入");
 assert.ok(globeState.polygons.length > 100, "国家板块应载入");
+assert.equal(globeState.globeMaterial?.type, "MeshBasicMaterial", "海洋应使用不受灯光影响的纯色基础材质");
+assert.equal(globeState.globeMaterial?.color.getHexString(), "c9dde3", "海洋应保持统一的高明度莫兰迪浅蓝");
 const borderVertexCounts = globeState.polygons.flatMap((country) => (
   country.geometry.type === "Polygon"
     ? country.geometry.coordinates.map((ring) => ring.length)

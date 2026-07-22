@@ -14,9 +14,11 @@
     || params.has("q")
     || params.has("job");
   const countryPalette = [
-    "#E7CBC5", "#C9D8D0", "#C5D3DF", "#E7D9C4", "#D8CEE0",
-    "#E8D0C8", "#C3D8D4", "#DDD4C6", "#CCD5E4", "#E1CBD3"
+    "#EBD8D3", "#D8E5DC", "#D8E0E8", "#EEE3CF", "#E3DBEA",
+    "#EEDDD5", "#D2E5E0", "#E5DED2", "#E2E7DC", "#E9D8DF"
   ];
+  const oceanColor = "#C9DDE3";
+  const atmosphereColor = "#DCE9E9";
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
   const countryCapCurvatureResolution = 0.75;
   const clusterSplitThreshold = 0.4;
@@ -1378,8 +1380,8 @@
         .globeImageUrl(null)
         .bumpImageUrl(null)
         .showAtmosphere(true)
-        .atmosphereColor("#c6d6d3")
-        .atmosphereAltitude(0.16)
+        .atmosphereColor(atmosphereColor)
+        .atmosphereAltitude(0.075)
         .showGraticules(false)
         .polygonsData([])
         .polygonAltitude(countryAltitude)
@@ -1420,13 +1422,20 @@
         .onGlobeClick(clearFromGlobe)
         .onGlobeReady(hideLoading);
 
+      if (window.THREE?.MeshBasicMaterial) {
+        state.globe.globeMaterial(new window.THREE.MeshBasicMaterial({
+          color: oceanColor,
+          side: window.THREE.FrontSide
+        }));
+      }
+
       const material = state.globe.globeMaterial();
       if (material) {
-        material.color.set("#B6CACD");
-        material.emissive.set("#E4EDEB");
-        material.emissiveIntensity = 0.22;
-        if (material.specular) material.specular.set("#F7FBF8");
-        material.shininess = 5;
+        material.color?.set(oceanColor);
+        if (material.emissive) material.emissive.set(oceanColor);
+        if ("emissiveIntensity" in material) material.emissiveIntensity = 0;
+        if (material.specular) material.specular.set(oceanColor);
+        if ("shininess" in material) material.shininess = 0;
         material.needsUpdate = true;
       }
 
