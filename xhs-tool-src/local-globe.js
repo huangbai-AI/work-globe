@@ -48,8 +48,8 @@
       this._centerLat = 20;
       this._centerLng = 20;
       this._altitude = 1.7;
-      this._waterColor = "#C9DDE3";
-      this._atmosphereColor = "#DCE9E9";
+      this._waterColor = "#BBD2DA";
+      this._atmosphereColor = "#D7E6E7";
       this._showAtmosphere = true;
       this._polygons = [];
       this._points = [];

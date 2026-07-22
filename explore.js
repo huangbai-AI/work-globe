@@ -14,11 +14,11 @@
     || params.has("q")
     || params.has("job");
   const countryPalette = [
-    "#EBD8D3", "#D8E5DC", "#D8E0E8", "#EEE3CF", "#E3DBEA",
-    "#EEDDD5", "#D2E5E0", "#E5DED2", "#E2E7DC", "#E9D8DF"
+    "#E5CAC4", "#C9D8C9", "#D7CEDB", "#E5D7C2", "#D9CCE0",
+    "#E6CCC2", "#C8DAC9", "#DCD0BE", "#D4D9C1", "#DFC8D1"
   ];
-  const oceanColor = "#C9DDE3";
-  const atmosphereColor = "#DCE9E9";
+  const oceanColor = "#BBD2DA";
+  const atmosphereColor = "#D7E6E7";
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
   const countryCapCurvatureResolution = 0.75;
   const clusterSplitThreshold = 0.4;
