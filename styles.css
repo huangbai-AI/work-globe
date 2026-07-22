@@ -399,11 +399,14 @@ input:focus-visible {
 .app-page.is-explore .shared-earth::before { opacity: 0.6; transform: translate(-13%, -10%) scale(1.14); }
 
 .app-page #work-globe canvas {
-  filter: none;
+  filter: drop-shadow(-12px 18px 38px rgba(79, 111, 132, 0.14));
   transition: filter 720ms var(--ease-out);
 }
 
-.app-page.is-landing #work-globe canvas { cursor: default; filter: none; }
+.app-page.is-landing #work-globe canvas {
+  cursor: default;
+  filter: drop-shadow(-16px 22px 48px rgba(79, 111, 132, 0.17));
+}
 .app-page.is-explore #work-globe canvas { cursor: grab; }
 .app-page.is-explore #work-globe canvas:active { cursor: grabbing; }
 .app-page #work-globe.is-country-hovered canvas { cursor: pointer; }
@@ -1231,6 +1234,74 @@ input:focus-visible {
 }
 
 @keyframes loading-orbit { to { transform: rotate(360deg); } }
+
+/* 3:2 首页主视觉：大标题与局部地球保持更强的编辑构图 */
+@media (min-width: 981px) {
+  .app-header {
+    top: 58px;
+    height: 108px;
+    padding: 0 clamp(76px, 5vw, 108px);
+  }
+
+  .wordmark { gap: 14px; }
+  .wordmark-mark { width: 56px; height: 56px; }
+  .wordmark-type { width: 168px; }
+  .wordmark-copy { gap: 5px; }
+  .wordmark-copy small {
+    padding-left: 4px;
+    font-size: 8px;
+    letter-spacing: 0.24em;
+  }
+
+  .landing-copy {
+    top: 53%;
+    left: clamp(76px, 5vw, 108px);
+    width: min(42vw, 650px);
+    transform: translateY(-48%);
+  }
+
+  .landing-copy h1 {
+    font-family: "Songti SC", STSong, "Noto Serif CJK SC", var(--display);
+    font-size: clamp(116px, 9vw, 138px);
+    font-weight: 700;
+    line-height: 1.14;
+    letter-spacing: -0.035em;
+  }
+
+  .landing-title-line { white-space: nowrap; }
+
+  .primary-entry {
+    width: clamp(380px, 27.5vw, 420px);
+    min-height: 94px;
+    margin-top: 38px;
+    padding: 0 9px 0 58px;
+    font-size: 20px;
+    font-weight: 620;
+    letter-spacing: 0.045em;
+    box-shadow: 0 18px 42px rgba(18, 25, 28, 0.16), 0 4px 12px rgba(18, 25, 28, 0.07);
+  }
+
+  .primary-entry svg {
+    width: 76px;
+    height: 76px;
+    padding: 23px;
+  }
+
+  .landing-footer {
+    bottom: 54px;
+    left: clamp(76px, 5vw, 108px);
+    font-size: 8px;
+    letter-spacing: 0.15em;
+  }
+
+  .shared-earth::before {
+    top: -5%;
+    right: -8%;
+    width: min(88vw, 1320px);
+    background: radial-gradient(circle, rgba(255,255,255,0.58), rgba(216,233,247,0.2) 58%, transparent 74%);
+    filter: blur(24px);
+  }
+}
 
 /* 平板 */
 @media (max-width: 980px) {
