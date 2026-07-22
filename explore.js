@@ -485,8 +485,11 @@
     els.card.style.setProperty("--job-color", colorFor(job));
     els.cardChannel.textContent = job.source;
     els.cardTitle.textContent = job.title;
+    els.cardTitle.title = job.title;
     els.cardLocation.textContent = job.location;
+    els.cardLocation.title = job.location;
     els.cardSalary.textContent = job.salary;
+    els.cardSalary.title = job.salary;
     els.cardSummary.textContent = job.summary;
     els.cardTags.innerHTML = (job.tags || []).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
     configureApplyLink(job);

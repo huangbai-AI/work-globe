@@ -1327,9 +1327,9 @@ input:focus-visible {
   .job-card {
     top: 84px;
     width: calc(100vw - 28px);
-    min-height: 296px;
+    min-height: 258px;
     max-height: calc(100dvh - 188px);
-    padding: 21px 32px 20px;
+    padding: 18px 52px 16px;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1345,13 +1345,45 @@ input:focus-visible {
     height: 44px;
     transform: translateY(-50%);
   }
-  .card-switch-prev { right: auto; left: -12px; }
-  .card-switch-next { right: -12px; left: auto; }
+  .card-switch-prev { right: auto; left: 8px; }
+  .card-switch-next { right: 8px; left: auto; }
   .card-switch:hover { transform: translateY(-50%) scale(1.05); }
-  .job-card-channel { margin-top: 17px; }
-  .job-card h1 { max-width: 100%; padding-right: 0; font-size: 30px; white-space: normal; }
-  .job-card-facts { max-width: 100%; margin-top: 13px; gap: 7px 14px; }
-  .job-card-summary { max-width: 100%; margin-top: 14px; font-size: 11px; }
+  .job-card-channel { margin: 12px 0 3px; }
+  .job-card h1 {
+    display: -webkit-box;
+    max-width: 100%;
+    padding-right: 0;
+    overflow: hidden;
+    font-size: 28px;
+    line-height: 1.06;
+    text-overflow: ellipsis;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  .job-card-facts {
+    flex-wrap: nowrap;
+    gap: 12px;
+    max-width: 100%;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .job-card-facts span {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .job-card-facts span:first-child { flex: 1 1 55%; }
+  .job-card-facts span:last-child { flex: 1 1 45%; }
+  .job-card-facts svg { flex: 0 0 auto; }
+  .job-card-facts b {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .job-card-summary { max-width: 100%; margin-top: 10px; font-size: 11px; line-height: 1.55; }
   .job-card-tags { max-width: 100%; }
   .job-card-actions {
     position: static;
@@ -1359,7 +1391,7 @@ input:focus-visible {
     align-items: center;
     gap: 8px;
     margin-top: auto;
-    padding-top: 18px;
+    padding-top: 12px;
     padding-right: 0;
   }
   .job-action { min-height: 46px; padding: 0 16px; }
