@@ -28,23 +28,7 @@ html { touch-action: manipulation; }
 .local-globe-canvas:active { cursor: grabbing; }
 
 .local-globe-tooltip {
-  position: absolute;
-  z-index: 8;
   width: min(320px, calc(100vw - 32px));
-  pointer-events: none;
-  transform: translate(14px, calc(-100% - 14px));
-}
-
-.local-globe-tooltip.is-left {
-  transform: translate(calc(-100% - 14px), calc(-100% - 14px));
-}
-
-.local-globe-tooltip.is-below {
-  transform: translate(14px, 14px);
-}
-
-.local-globe-tooltip.is-left.is-below {
-  transform: translate(calc(-100% - 14px), 14px);
 }
 
 .is-xhs-tool .job-action-primary.is-offline { cursor: pointer; }

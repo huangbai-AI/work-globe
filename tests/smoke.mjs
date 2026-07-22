@@ -29,6 +29,9 @@ assert.match(styles, /--canvas: #e2edf8;/, "网页画布应使用参考图提取
 assert.match(styles, /\.job-card\.is-details-open\s*\{[^}]*overflow-x:\s*hidden;/s, "展开岗位详情时不应出现横向滚动");
 assert.match(styles, /\.job-card::\-webkit-scrollbar\s*\{[^}]*display:\s*none;/s, "岗位卡片滚动条应保持隐藏");
 assert.match(styles, /\.wordmark-copy b\s*\{[^}]*font-size:\s*20px;/s, "OpenWork 文字标志应保持足够醒目的字号");
+assert.match(styles, /#work-globe \[class\^="float-tooltip-"\][\s\S]*?background:\s*transparent\s*!important;/, "地球组件自带提示层不能保留黑色背景");
+assert.match(styles, /\.map-tooltip\s*\{[\s\S]*?transition:[\s\S]*?opacity 300ms[\s\S]*?transform 300ms/s, "岗位悬浮卡片应使用约 0.3 秒的透明度与缩放动效");
+assert.match(styles, /\.map-tooltip\s*\{[\s\S]*?box-shadow:[\s\S]*?0 18px 46px rgba\(38, 49, 48, 0\.14\)/s, "岗位悬浮卡片应使用克制的常规阴影");
 assert.equal(referencePalette.map.canvas, "#E2EDF8", "提取记录应保留参考图画布主色");
 assert.equal(referencePalette.map.ocean, "#E1ECF7", "提取记录应保留参考图海洋主色");
 assert.equal(Object.keys(referencePalette.pins).length, 14, "提取记录应完整保留参考图的十四种图钉颜色");
@@ -197,6 +200,7 @@ assert.equal(
   "首页应移除时间状态、标题前缀、说明文案与地球操作提示"
 );
 assert.equal(window.document.querySelectorAll("#category-toggle, #category-menu").length, 0, "底部应只保留搜索框，不再显示类型筛选");
+assert.ok(window.document.querySelector(".map-hover-tooltip"), "网页端应使用独立悬浮卡片，避免第三方提示框黑边");
 assert.equal(window.document.querySelector("#job-card").hidden, false);
 assert.ok(globeState.objects.length > 0, "岗位圆钉数据应载入");
 assert.ok(globeState.polygons.length > 100, "国家板块应载入");

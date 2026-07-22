@@ -88,6 +88,10 @@
     markers: [],
     markerRefreshTimer: 0,
     markerObjects: new Set(),
+    hoverTooltip: null,
+    hoverTooltipTimer: 0,
+    pointerX: 0,
+    pointerY: 0,
     rotationResumeTimer: 0,
     ready: false,
     resultsOpen: false,
@@ -281,10 +285,53 @@
     </div>`;
   }
 
+  function positionHoverTooltip() {
+    if (!state.hoverTooltip || state.hoverTooltip.hidden) return;
+    const rect = els.globe.getBoundingClientRect();
+    const localX = Math.max(12, Math.min(rect.width - 12, state.pointerX - rect.left));
+    const localY = Math.max(12, Math.min(rect.height - 12, state.pointerY - rect.top));
+    state.hoverTooltip.style.left = `${localX}px`;
+    state.hoverTooltip.style.top = `${localY}px`;
+    const tooltipWidth = state.hoverTooltip.offsetWidth || 356;
+    const tooltipHeight = state.hoverTooltip.offsetHeight || 240;
+    state.hoverTooltip.classList.toggle("is-left", localX + tooltipWidth + 34 > rect.width);
+    state.hoverTooltip.classList.toggle("is-below", localY - tooltipHeight - 28 < 0);
+  }
+
+  function showHoverTooltip(marker) {
+    if (!state.hoverTooltip || !marker) return;
+    window.clearTimeout(state.hoverTooltipTimer);
+    state.hoverTooltip.innerHTML = tooltip(marker);
+    state.hoverTooltip.hidden = false;
+    positionHoverTooltip();
+    state.hoverTooltip.classList.remove("is-leaving");
+    requestAnimationFrame(() => state.hoverTooltip?.classList.add("is-visible"));
+  }
+
+  function hideHoverTooltip() {
+    if (!state.hoverTooltip || state.hoverTooltip.hidden || state.hoverTooltip.classList.contains("is-leaving")) return;
+    window.clearTimeout(state.hoverTooltipTimer);
+    state.hoverTooltip.classList.remove("is-visible");
+    state.hoverTooltip.classList.add("is-leaving");
+    state.hoverTooltipTimer = window.setTimeout(() => {
+      if (!state.hoverTooltip || state.hoverTooltip.classList.contains("is-visible")) return;
+      state.hoverTooltip.hidden = true;
+      state.hoverTooltip.classList.remove("is-leaving");
+      state.hoverTooltip.innerHTML = "";
+    }, reducedMotion ? 0 : 300);
+  }
+
   function hoverJob(job) {
     const next = job?.job || job?.jobs?.[0] || job || null;
-    if ((state.hovered?.id || null) === (next?.id || null)) return;
+    if ((state.hovered?.id || null) === (next?.id || null)) {
+      if (next) positionHoverTooltip();
+      return;
+    }
     state.hovered = next;
+    if (!xhsMode) {
+      if (job) showHoverTooltip(job);
+      else hideHoverTooltip();
+    }
     if (!state.globe) return;
     refreshMarkerScales();
   }
@@ -1390,7 +1437,7 @@
         .pointRadius(pointRadius)
         .pointColor(pointColor)
         .pointResolution(isTouch ? 8 : 11)
-        .pointLabel(tooltip)
+        .pointLabel(xhsMode ? tooltip : () => "")
         .ringsData([])
         .ringLat("mapLat")
         .ringLng("mapLng")
@@ -1403,7 +1450,7 @@
         .objectAltitude(() => 0.0085)
         .objectFacesSurface(true)
         .objectThreeObject(markerObject)
-        .objectLabel(tooltip)
+        .objectLabel(xhsMode ? tooltip : () => "")
         .onObjectHover(hoverJob)
         .onObjectClick(selectPointJob)
         .onPointHover(hoverJob)
@@ -1418,6 +1465,14 @@
           color: oceanColor,
           side: window.THREE.FrontSide
         }));
+      }
+
+      if (!xhsMode) {
+        state.hoverTooltip = document.createElement("div");
+        state.hoverTooltip.className = "map-hover-tooltip";
+        state.hoverTooltip.hidden = true;
+        state.hoverTooltip.setAttribute("aria-hidden", "true");
+        els.globe.appendChild(state.hoverTooltip);
       }
 
       const material = state.globe.globeMaterial();
@@ -1494,7 +1549,12 @@
       scheduleAutoRotation();
     };
     els.globe.addEventListener("pointerdown", stopAutoRotation, { passive: true });
-    els.globe.addEventListener("pointermove", noteGlobeActivity, { passive: true });
+    els.globe.addEventListener("pointermove", (event) => {
+      state.pointerX = event.clientX;
+      state.pointerY = event.clientY;
+      positionHoverTooltip();
+      noteGlobeActivity();
+    }, { passive: true });
     els.globe.addEventListener("pointerup", () => scheduleAutoRotation(), { passive: true });
     els.globe.addEventListener("pointerleave", () => scheduleAutoRotation(), { passive: true });
     els.globe.addEventListener("wheel", noteGlobeActivity, { passive: true });

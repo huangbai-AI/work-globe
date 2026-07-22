@@ -39,6 +39,7 @@
       this.tooltip = document.createElement("div");
       this.tooltip.className = "local-globe-tooltip";
       this.tooltip.hidden = true;
+      this._tooltipHideTimer = 0;
       this.element.replaceChildren(this.canvas, this.tooltip);
 
       this._width = window.innerWidth;
@@ -119,7 +120,7 @@
           lng: this._centerLng
         };
         this._controls._emit("start");
-        this.tooltip.hidden = true;
+        this._hideTooltip();
       });
 
       this.canvas.addEventListener("pointermove", (event) => {
@@ -144,7 +145,7 @@
       this.canvas.addEventListener("pointerup", finishPointer);
       this.canvas.addEventListener("pointercancel", () => { this._drag = null; });
       this.canvas.addEventListener("pointerleave", (event) => {
-        this.tooltip.hidden = true;
+        this._hideTooltip();
         this._setHoveredPoint(null);
         if (event.buttons === 0) this._drag = null;
       });
@@ -186,17 +187,18 @@
     _showTooltip(clientX, clientY) {
       const point = this._nearestPoint(clientX, clientY, 12);
       if (!point) {
-        this.tooltip.hidden = true;
+        this._hideTooltip();
         this._setHoveredPoint(null);
         return;
       }
       this._setHoveredPoint(point.item);
       const label = valueOf(this._pointLabel, point.item);
       if (!label) {
-        this.tooltip.hidden = true;
+        this._hideTooltip();
         return;
       }
       const rect = this.element.getBoundingClientRect();
+      window.clearTimeout(this._tooltipHideTimer);
       this.tooltip.innerHTML = label;
       this.tooltip.style.left = `${clientX - rect.left}px`;
       this.tooltip.style.top = `${clientY - rect.top}px`;
@@ -207,6 +209,21 @@
       const localY = clientY - rect.top;
       this.tooltip.classList.toggle("is-left", localX + tooltipWidth + 30 > rect.width);
       this.tooltip.classList.toggle("is-below", localY - tooltipHeight - 24 < 0);
+      this.tooltip.classList.remove("is-leaving");
+      requestAnimationFrame(() => this.tooltip.classList.add("is-visible"));
+    }
+
+    _hideTooltip() {
+      if (this.tooltip.hidden || this.tooltip.classList.contains("is-leaving")) return;
+      window.clearTimeout(this._tooltipHideTimer);
+      this.tooltip.classList.remove("is-visible");
+      this.tooltip.classList.add("is-leaving");
+      this._tooltipHideTimer = window.setTimeout(() => {
+        if (this.tooltip.classList.contains("is-visible")) return;
+        this.tooltip.hidden = true;
+        this.tooltip.classList.remove("is-leaving");
+        this.tooltip.innerHTML = "";
+      }, 300);
     }
 
     _setHoveredPoint(item) {
