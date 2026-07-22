@@ -840,35 +840,6 @@ input:focus-visible {
 .card-switch:hover { background: #fcfcfc; color: var(--ink); transform: translateY(-50%) scale(1.07); }
 .card-switch:active { transform: translateY(-50%) scale(0.94); }
 
-.job-card-topline {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-right: 210px;
-  color: var(--ink-faint);
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-
-.evidence-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 25px;
-  padding: 0 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-}
-
-.card-position {
-  min-width: 56px;
-  color: var(--ink-faint);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.09em;
-  text-align: right;
-}
-
 .job-card-channel {
   margin: 15px 0 4px;
   color: var(--ink-faint);
@@ -1371,8 +1342,6 @@ input:focus-visible {
   .card-switch-prev { right: 66px; left: auto; }
   .card-switch-next { right: 18px; }
   .card-switch:hover { transform: scale(1.05); }
-  .job-card-topline { gap: 6px; padding-right: 105px; }
-  .evidence-pill { display: none; }
   .job-card-channel { margin-top: 17px; }
   .job-card h1 { max-width: 100%; padding-right: 0; font-size: 30px; white-space: normal; }
   .job-card-facts { max-width: 100%; margin-top: 13px; gap: 7px 14px; }

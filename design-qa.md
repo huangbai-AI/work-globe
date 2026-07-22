@@ -1,5 +1,9 @@
 # Design QA
 
+- 本轮顶部栏删除参考：`/Users/a1/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/wxid_67kb4xju005n21_3fe5/temp/InputTemp/c89749ba-a80d-4639-8d1b-b1b8f52aa8ab.png`
+- 本轮浏览器实现截图：`output/design-qa/openwork-card-cleanup-desktop.jpg`
+- 本轮卡片同状态对照：`output/design-qa/openwork-card-cleanup-comparison.jpg`
+- 本轮实际浏览器视口：1280 × 720；实现截图为 1280 × 720、1 倍密度。参考图原始尺寸 1622 × 628，卡片区域归一化至同宽后比较。
 - 本轮来源与直达状态参考：`/Users/a1/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/wxid_67kb4xju005n21_3fe5/temp/InputTemp/9a07fefe-e3af-4855-93a7-20fd042211f5.png`
 - 本轮浏览器实现截图：`output/design-qa/openwork-direct-card-desktop.jpg`
 - 本轮全屏同尺寸对照：`output/design-qa/openwork-direct-card-comparison.jpg`
@@ -37,6 +41,7 @@
 - 首页默认视角改为北半球与欧洲朝向观众，欧洲岗位密集区进入主视野，非洲仅保留在画面下部；探索页仍以欧洲中部为中心。
 - 首页入口文案改为“探索岗位”；点击后直接选中汉堡的 Arbeitnow 岗位合集并显示完整卡片，不再经过空白探索状态。
 - 卡片右上角重复的来源信息已删除；标题上方原公司眉题改为“来源渠道 · Arbeitnow”，公司名称继续保留在岗位摘要中。
+- 卡片顶部的城市合集、岗位数量、合集标签与序号信息栏已完整删除；关闭按钮与来源渠道眉题保留，正文自然上移。
 
 ## 视觉问题闭环
 
@@ -49,6 +54,7 @@
 7. P2：来源曾在公司眉题和右上角分散显示。现已合并到标题上方单一来源渠道标签，右上角只保留关闭按钮。
 8. P1：首页入口曾先进入无卡片状态。现已把按钮改为“探索岗位”，点击后直接呈现欧洲岗位卡片。
 9. 本轮全屏与卡片局部对照未发现新的 P0、P1 或 P2 视觉问题。
+10. P2：卡片顶部信息栏占据过多纵向空间。现已删除对应结构、样式与渲染逻辑；浏览器同状态对照确认没有遗留空白或错位。
 
 ## 交互与兼容
 

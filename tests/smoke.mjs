@@ -43,8 +43,9 @@ assert.match(styles, /@media \(min-width:\s*981px\)[\s\S]*?\.app-header\s*\{[^}]
 assert.match(styles, /@media \(min-width:\s*981px\)[\s\S]*?\.landing-copy\s*\{[^}]*top:\s*50\.5%;/s, "桌面端标题与按钮组应按标注整体上移");
 assert.match(html, /<span>探索岗位<\/span>/, "首页按钮应使用更直接的‘探索岗位’文案");
 assert.doesNotMatch(html, /job-card-source|id="card-source"/, "卡片右上角不应重复显示来源信息");
+assert.doesNotMatch(html, /job-card-topline|card-posted|card-evidence|card-position/, "岗位卡片顶部的信息栏应完整移除");
 assert.match(html, /class="job-card-channel">来源渠道 · <b id="card-channel"><\/b>/, "来源渠道应显示在标题上方的轻量标签中");
-assert.match(html, /styles\.css\?v=20260722-direct-job-card/, "岗位直达调整后应更新样式缓存版本");
+assert.match(html, /styles\.css\?v=20260722-card-cleanup/, "卡片顶部清理后应更新样式缓存版本");
 assert.match(html, /explore\.js\?v=20260722-direct-job-card/, "岗位直达调整后应更新脚本缓存版本");
 const exploreSource = await readFile(new URL("explore.js", projectRoot), "utf8");
 assert.match(exploreSource, /exploreHomeView\s*=\s*Object\.freeze\(\{\s*lat:\s*50,\s*lng:\s*10\s*\}\)/, "探索页默认视角应正对欧洲中部");
@@ -362,8 +363,7 @@ const countryColorBeforeSelection = globeState.polygonCapColorAccessor(countryWi
 const nextCountryColorBeforeSelection = globeState.polygonCapColorAccessor(nextCountryWithJobs);
 globeState.handlers.onPolygonClick(countryWithJobs, { stopPropagation() {} });
 assert.equal(window.document.querySelector("#job-card").hidden, false);
-assert.equal(window.document.querySelector("#card-evidence").textContent, "国家岗位");
-assert.match(window.document.querySelector("#card-posted").textContent, /岗位/);
+assert.equal(window.document.querySelector("#job-card").dataset.selectionType, "country", "国家选择仍应保留卡片切换状态");
 const countryColorAfterSelection = globeState.polygonCapColorAccessor(countryWithJobs);
 const beforeSelectionColor = colorSaturationAndLightness(countryColorBeforeSelection);
 const afterSelectionColor = colorSaturationAndLightness(countryColorAfterSelection);
@@ -404,7 +404,7 @@ console.log(JSON.stringify({
   clusteredMarkers: clusteredMarkerCount,
   expandedMarkers: expandedMarkerCount,
   maxBorderVertices,
-  countrySelection: window.document.querySelector("#card-posted").textContent
+  countrySelection: window.document.querySelector("#job-card").dataset.selectionType
 }));
 
 dom.window.close();

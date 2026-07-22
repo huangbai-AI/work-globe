@@ -135,10 +135,7 @@
     card: $("#job-card"),
     cardPrev: $("#card-prev"),
     cardNext: $("#card-next"),
-    cardPosition: $("#card-position"),
     cardClose: $("#job-card-close"),
-    cardPosted: $("#card-posted"),
-    cardEvidence: $("#card-evidence"),
     cardChannel: $("#card-channel"),
     cardTitle: $("#card-title"),
     cardLocation: $("#card-location"),
@@ -463,10 +460,6 @@
     els.card.hidden = false;
     els.card.dataset.selectionType = state.selectionType || "job";
     els.card.style.setProperty("--job-color", colorFor(job));
-    els.cardPosted.textContent = state.selectionLabel || job.posted;
-    els.cardEvidence.textContent = state.selectionType === "country"
-      ? "国家岗位"
-      : state.selectionType === "cluster" ? "附近合集" : job.evidence;
     els.cardChannel.textContent = job.source;
     els.cardTitle.textContent = job.title;
     els.cardLocation.textContent = job.location;
@@ -474,9 +467,6 @@
     els.cardSummary.textContent = job.summary;
     els.cardTags.innerHTML = (job.tags || []).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
     configureApplyLink(job);
-    const pool = state.selectionPool.length ? state.selectionPool : matchingJobs();
-    const position = Math.max(0, pool.findIndex((item) => item.id === job.id));
-    els.cardPosition.textContent = `${String(position + 1).padStart(2, "0")} / ${String(pool.length).padStart(2, "0")}`;
     if (changed) {
       setCardDetails(false);
       els.cardActionFeedback.hidden = true;
