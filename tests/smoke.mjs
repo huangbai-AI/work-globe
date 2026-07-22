@@ -201,7 +201,7 @@ assert.equal(window.document.querySelector("#job-card").hidden, false);
 assert.ok(globeState.objects.length > 0, "岗位圆钉数据应载入");
 assert.ok(globeState.polygons.length > 100, "国家板块应载入");
 assert.equal(globeState.globeMaterial?.type, "MeshBasicMaterial", "海洋应使用不受灯光影响的纯色基础材质");
-assert.equal(globeState.globeMaterial?.color.getHexString(), "e1ecf7", "海洋应严格使用参考图提取出的冰雾浅蓝");
+assert.equal(globeState.globeMaterial?.color.getHexString(), "c4dae6", "海洋应使用与画布有清楚明度差的高明度雾蓝");
 const borderVertexCounts = globeState.polygons.flatMap((country) => (
   country.geometry.type === "Polygon"
     ? country.geometry.coordinates.map((ring) => ring.length)

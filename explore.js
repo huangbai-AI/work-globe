@@ -17,7 +17,7 @@
     "#E6CCCB", "#CBD6CD", "#C8D4E6", "#E8D9C4", "#D9CEE1",
     "#E5D2D3", "#CAD6D1", "#E8D3BD", "#C7C8DC", "#E2CDD0"
   ];
-  const oceanColor = "#E1ECF7";
+  const oceanColor = "#C4DAE6";
   const atmosphereColor = "#FFFFFF";
   const countryHueGroups = [0, 1, 2, 3, 4, 0, 5, 3, 2, 4];
   const countryCapCurvatureResolution = 0.75;
