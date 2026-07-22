@@ -31,6 +31,11 @@ assert.match(styles, /\.job-card::\-webkit-scrollbar\s*\{[^}]*display:\s*none;/s
 assert.match(html, /class="wordmark-type"\s+src="openwork-wordmark\.png"/, "页头应使用生成并抠图后的 OpenWork 文字标志");
 assert.match(styles, /\.wordmark-type\s*\{[^}]*width:\s*180px;/s, "OpenWork 文字标志应保持足够醒目的尺寸");
 assert.match(styles, /\.landing-copy h1\s*\{[^}]*font-size:\s*clamp\(72px, 8\.1vw, 124px\)/s, "首页标题应使用 image-2 视觉稿中的海报级字号");
+assert.equal((html.match(/class="landing-title-line"/g) || []).length, 2, "首页标题应拆成两行依次浮现");
+assert.match(styles, /\.landing-title-line\s*\{[^}]*opacity:\s*0;[^}]*translate3d\(-18px, 24px, 0\)[^}]*opacity 760ms/s, "首页标题应使用上浮并渐显的入场动效");
+assert.match(styles, /\.app-page\.is-ui-ready\.is-landing \.landing-title-line\s*\{[^}]*opacity:\s*1;[^}]*translate3d\(0, 0, 0\)/s, "首页标题入场与退场应由同一组可逆状态衔接");
+assert.match(styles, /\.app-page\.is-landing:not\(\.is-ui-ready\) \.shared-earth\s*\{[^}]*opacity:\s*0;[^}]*scale\(0\.945\)/s, "首页地球应从轻微缩小和透明状态渐显");
+assert.match(styles, /\.app-page\.is-explore\.is-transitioning \.landing-title-line\s*\{[^}]*opacity:\s*0;[^}]*translate3d\(-30px, -5px, 0\)/s, "进入探索时标题应连续退场而非突然消失");
 assert.match(styles, /\.primary-entry\s*\{[^}]*width:\s*clamp\(284px, 27vw, 388px\)[^}]*border-radius:\s*3px/s, "桌面入口应使用 image-2 视觉稿中的宽幅方形构图");
 assert.match(styles, /#work-globe \[class\^="float-tooltip-"\][\s\S]*?background:\s*transparent\s*!important;/, "地球组件自带提示层不能保留黑色背景");
 assert.match(styles, /\.map-tooltip\s*\{[\s\S]*?transition:[\s\S]*?opacity 300ms[\s\S]*?transform 300ms/s, "岗位悬浮卡片应使用约 0.3 秒的透明度与缩放动效");

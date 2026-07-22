@@ -1218,6 +1218,9 @@
     state.ready = true;
     els.body.classList.add("is-ui-ready");
     els.loading.classList.add("is-hidden");
+    window.setTimeout(() => {
+      els.body.classList.add("is-intro-complete");
+    }, reducedMotion ? 0 : 1100);
   }
 
   function showFallback() {
@@ -1344,7 +1347,7 @@
 
   function setView(view, options = {}) {
     if (view === state.view && !options.force) return;
-    const duration = reducedMotion || options.instant ? 0 : 860;
+    const duration = reducedMotion || options.instant ? 0 : 920;
     state.view = view;
     state.transitioning = duration > 0;
     els.body.classList.toggle("is-landing", view === "landing");
@@ -1408,9 +1411,9 @@
     try {
       let globe;
       try {
-        globe = new window.Globe(els.globe, { animateIn: !reducedMotion, waitForGlobeReady: true });
+        globe = new window.Globe(els.globe, { animateIn: false, waitForGlobeReady: true });
       } catch (_) {
-        globe = window.Globe({ animateIn: !reducedMotion, waitForGlobeReady: true })(els.globe);
+        globe = window.Globe({ animateIn: false, waitForGlobeReady: true })(els.globe);
       }
 
       state.globe = globe

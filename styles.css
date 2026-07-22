@@ -155,7 +155,7 @@ input:focus-visible {
   height: 88px;
   padding: 0 clamp(24px, 3.2vw, 54px);
   pointer-events: none;
-  animation: header-arrive 720ms var(--ease-out) both;
+  animation: header-arrive 680ms var(--ease-out) 60ms both;
   animation-play-state: paused;
 }
 
@@ -214,12 +214,9 @@ input:focus-visible {
   left: clamp(56px, 5.2vw, 92px);
   width: min(49vw, 720px);
   transform: translateY(-48%);
-  animation: copy-arrive 880ms var(--ease-out) 80ms both;
-  animation-play-state: paused;
 }
 
-.app-page.is-ui-ready .app-header,
-.app-page.is-ui-ready .landing-copy { animation-play-state: running; }
+.app-page.is-ui-ready .app-header { animation-play-state: running; }
 
 .landing-copy h1 {
   margin: 0;
@@ -230,6 +227,28 @@ input:focus-visible {
   line-height: 0.93;
   letter-spacing: -0.072em;
 }
+
+.landing-title-line {
+  display: block;
+  opacity: 0;
+  filter: blur(9px);
+  transform: translate3d(-18px, 24px, 0) scale(0.985);
+  transform-origin: left center;
+  transition:
+    opacity 760ms var(--ease-out),
+    transform 840ms var(--ease-out),
+    filter 700ms var(--ease-out);
+  will-change: opacity, transform, filter;
+}
+
+.app-page.is-ui-ready.is-landing .landing-title-line {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.app-page.is-ui-ready.is-landing:not(.is-intro-complete) .landing-title-line:nth-child(1) { transition-delay: 100ms; }
+.app-page.is-ui-ready.is-landing:not(.is-intro-complete) .landing-title-line:nth-child(2) { transition-delay: 175ms; }
 
 .primary-entry {
   position: relative;
@@ -250,7 +269,27 @@ input:focus-visible {
   font-size: 15px;
   font-weight: 560;
   letter-spacing: 0.045em;
-  transition: background 220ms ease, box-shadow 220ms ease, transform 220ms var(--ease-out), border-color 220ms ease;
+  opacity: 0;
+  filter: blur(7px);
+  transform: translate3d(0, 18px, 0) scale(0.975);
+  transition:
+    background 220ms ease,
+    box-shadow 220ms ease,
+    transform 620ms var(--ease-out),
+    border-color 220ms ease,
+    opacity 560ms var(--ease-out),
+    filter 520ms var(--ease-out);
+  will-change: opacity, transform, filter;
+}
+
+.app-page.is-ui-ready.is-landing .primary-entry {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.app-page.is-ui-ready.is-landing:not(.is-intro-complete) .primary-entry {
+  transition-delay: 0s, 0s, 310ms, 0s, 310ms, 310ms;
 }
 
 .primary-entry::before {
@@ -301,7 +340,11 @@ input:focus-visible {
   font-size: 8px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  animation: footer-arrive 560ms var(--ease-out) 460ms both;
+  animation-play-state: paused;
 }
+
+.app-page.is-ui-ready.is-landing .landing-footer { animation-play-state: running; }
 
 .footer-dot {
   width: 3px;
@@ -317,7 +360,24 @@ input:focus-visible {
   inset: 0;
 }
 
-.shared-earth { z-index: 2; }
+.shared-earth {
+  z-index: 2;
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1);
+  transform-origin: 76% 60%;
+  transition:
+    opacity 820ms var(--ease-out) 80ms,
+    transform 980ms var(--ease-out) 50ms,
+    filter 760ms var(--ease-out) 50ms;
+  will-change: opacity, transform, filter;
+}
+
+.app-page.is-landing:not(.is-ui-ready) .shared-earth {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translate3d(48px, 34px, 0) scale(0.945);
+}
 
 .shared-earth::before {
   position: absolute;
@@ -395,9 +455,9 @@ input:focus-visible {
   visibility: visible;
   filter: blur(0);
   transition:
-    opacity 340ms var(--ease-in),
-    transform 620ms var(--ease-out),
-    filter 420ms var(--ease-in),
+    opacity 300ms var(--ease-in),
+    transform 760ms var(--ease-out),
+    filter 380ms var(--ease-in),
     visibility 0s linear 0s;
 }
 
@@ -408,14 +468,44 @@ input:focus-visible {
   pointer-events: none;
   filter: blur(8px);
   transition:
-    opacity 320ms var(--ease-in),
-    transform 600ms var(--ease-out),
-    filter 400ms var(--ease-in),
-    visibility 0s linear 620ms;
+    opacity 260ms var(--ease-in),
+    transform 620ms var(--ease-out),
+    filter 340ms var(--ease-in),
+    visibility 0s linear 920ms;
 }
 
 .app-page.is-explore .landing-copy { transform: translate(-42px, -50%); }
 .app-page.is-explore .landing-footer { transform: translateY(12px); }
+
+.app-page.is-explore.is-transitioning .landing-copy {
+  opacity: 1;
+  visibility: visible;
+  filter: blur(0);
+  pointer-events: none;
+}
+
+.app-page.is-explore.is-transitioning .landing-title-line {
+  opacity: 0;
+  filter: blur(7px);
+  transform: translate3d(-30px, -5px, 0) scale(0.975);
+  transition-duration: 380ms, 480ms, 380ms;
+  transition-timing-function: var(--ease-in), var(--ease-in), var(--ease-in);
+}
+
+.app-page.is-explore.is-transitioning .landing-title-line:nth-child(2) {
+  transition-delay: 35ms;
+}
+
+.app-page.is-explore.is-transitioning .primary-entry {
+  opacity: 0;
+  filter: blur(6px);
+  transform: translate3d(-18px, 9px, 0) scale(0.965);
+  transition-duration: 220ms, 220ms, 360ms, 220ms, 300ms, 300ms;
+  transition-timing-function: ease, ease, var(--ease-in), ease, var(--ease-in), var(--ease-in);
+  transition-delay: 0s;
+}
+
+.app-page.is-explore:not(.is-transitioning) .landing-copy { transition: none; }
 
 .reset-view,
 .search-zone {
@@ -441,9 +531,17 @@ input:focus-visible {
   pointer-events: auto;
   transform: none;
   transition:
-    opacity 420ms var(--ease-out) 160ms,
-    transform 620ms var(--ease-out) 100ms,
-    filter 460ms var(--ease-out) 100ms,
+    opacity 400ms var(--ease-out) 180ms,
+    transform 560ms var(--ease-out) 120ms,
+    filter 420ms var(--ease-out) 120ms,
+    visibility 0s linear 0s;
+}
+
+.app-page.is-explore .search-zone {
+  transition:
+    opacity 420ms var(--ease-out) 470ms,
+    transform 620ms var(--ease-out) 400ms,
+    filter 460ms var(--ease-out) 400ms,
     visibility 0s linear 0s;
 }
 
@@ -1108,13 +1206,13 @@ input:focus-visible {
 }
 
 @keyframes header-arrive {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; filter: blur(5px); transform: translateY(-10px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
 }
 
-@keyframes copy-arrive {
-  from { opacity: 0; filter: blur(8px); transform: translate(-18px, -47%); }
-  to { opacity: 1; filter: blur(0); transform: translate(0, -47%); }
+@keyframes footer-arrive {
+  from { opacity: 0; filter: blur(4px); transform: translateY(8px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
 }
 
 @keyframes card-in {
@@ -1165,7 +1263,6 @@ input:focus-visible {
     left: 20px;
     width: auto;
     transform: none;
-    animation-name: mobile-copy-arrive;
   }
 
   .landing-copy h1 { max-width: 365px; font-size: clamp(52px, 15vw, 68px); line-height: 0.96; letter-spacing: -0.065em; }
@@ -1239,18 +1336,13 @@ input:focus-visible {
   .result-item { min-height: 62px; }
 }
 
-@keyframes mobile-copy-arrive {
-  from { opacity: 0; filter: blur(8px); transform: translateY(14px); }
-  to { opacity: 1; filter: blur(0); transform: translateY(0); }
-}
-
 /* 手机横屏 */
 @media (max-width: 920px) and (max-height: 520px) and (orientation: landscape) {
   .app-page,
   .app-shell { min-height: 100vh; min-height: 100dvh; }
   .app-header { height: 58px; padding: 0 18px; }
   .wordmark-mark { width: 34px; height: 34px; }
-  .landing-copy { top: 50%; right: auto; left: 28px; width: 44vw; transform: translateY(-47%); animation-name: copy-arrive; }
+  .landing-copy { top: 50%; right: auto; left: 28px; width: 44vw; transform: translateY(-47%); }
   .landing-copy h1 { font-size: clamp(37px, 6.5vw, 58px); }
   .primary-entry { width: min(260px, 41vw); min-height: 50px; margin-top: 17px; }
   .shared-earth::before { top: 0; right: -5%; width: 70vw; }
