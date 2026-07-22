@@ -590,6 +590,8 @@ input:focus-visible {
   min-height: 252px;
   padding: 26px 34px 88px;
   overflow: visible;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
   border: 1px solid rgba(18,25,28,0.12);
   border-radius: 30px;
   background: rgba(252,252,252,0.95);
@@ -598,6 +600,12 @@ input:focus-visible {
   backdrop-filter: blur(26px) saturate(112%);
   transform: translateX(-50%);
   animation: card-in 440ms var(--ease-out) both;
+}
+
+.job-card::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .job-card::before {
@@ -818,7 +826,9 @@ input:focus-visible {
 
 .job-card.is-details-open {
   max-height: min(72vh, 640px);
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .job-card.is-details-open .job-card-summary { display: block; overflow: visible; -webkit-line-clamp: unset; }
@@ -1109,7 +1119,9 @@ input:focus-visible {
     min-height: 296px;
     max-height: calc(100dvh - 188px);
     padding: 21px 20px 20px;
+    overflow-x: hidden;
     overflow-y: auto;
+    overscroll-behavior: contain;
     border-radius: 26px;
   }
 
