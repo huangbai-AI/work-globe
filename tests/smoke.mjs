@@ -27,6 +27,7 @@ assert.match(localGlobeSource, /context\.strokeStyle = "rgba\(255,255,255,\.98\)
 assert.match(styles, /--canvas: #e2edf8;/, "网页画布应使用参考图提取出的精确背景色");
 assert.match(styles, /\.job-card\.is-details-open\s*\{[^}]*overflow-x:\s*hidden;/s, "展开岗位详情时不应出现横向滚动");
 assert.match(styles, /\.job-card::\-webkit-scrollbar\s*\{[^}]*display:\s*none;/s, "岗位卡片滚动条应保持隐藏");
+assert.match(styles, /\.wordmark-copy b\s*\{[^}]*font-size:\s*20px;/s, "OpenWork 文字标志应保持足够醒目的字号");
 assert.equal(referencePalette.map.canvas, "#E2EDF8", "提取记录应保留参考图画布主色");
 assert.equal(referencePalette.map.ocean, "#E1ECF7", "提取记录应保留参考图海洋主色");
 assert.equal(Object.keys(referencePalette.pins).length, 14, "提取记录应完整保留参考图的十四种图钉颜色");
