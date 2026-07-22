@@ -354,9 +354,6 @@
         sheen.addColorStop(1, "rgba(18,25,28,.16)");
         context.fillStyle = sheen;
         context.fill();
-        context.strokeStyle = "rgba(255,255,255,.98)";
-        context.lineWidth = Math.max(1.35, radius * 0.25);
-        context.stroke();
         context.restore();
       });
     }

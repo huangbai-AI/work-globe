@@ -1090,22 +1090,6 @@
     stem.castShadow = true;
     group.add(head);
 
-    const halo = new window.THREE.Mesh(
-      new window.THREE.RingGeometry(headRadius * 0.96, headRadius * 1.16, 32),
-      new window.THREE.MeshBasicMaterial({
-        color: "#ffffff",
-        transparent: true,
-        opacity: 0.98,
-        depthWrite: false,
-        side: window.THREE.DoubleSide
-      })
-    );
-    halo.position.copy(headPosition);
-    halo.position.z += headRadius * 1.03;
-    halo.renderOrder = 4;
-    halo.visible = true;
-    group.add(halo);
-
     const { textureKey, texture } = markerLabelTexture(marker);
     const labelMaterial = new window.THREE.MeshBasicMaterial({
       map: texture,
@@ -1120,7 +1104,7 @@
     );
     label.position.copy(headPosition);
     label.position.z += headRadius * 1.06;
-    label.renderOrder = 5;
+    label.renderOrder = 4;
     label.visible = false;
     registerMarkerTextureMaterial(textureKey, labelMaterial);
     group.add(label);
@@ -1146,10 +1130,7 @@
       const scale = viewScale * sceneScale * (hovered ? 1.2 : 1);
       marker._threeObject.scale.setScalar(scale);
       if (marker._threeObject.children[2]) {
-        marker._threeObject.children[2].visible = true;
-      }
-      if (marker._threeObject.children[3]) {
-        marker._threeObject.children[3].visible = state.view === "explore" && hovered;
+        marker._threeObject.children[2].visible = state.view === "explore" && hovered;
       }
     });
   }
