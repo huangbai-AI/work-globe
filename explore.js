@@ -921,7 +921,7 @@
     const width = window.innerWidth;
     const height = window.innerHeight;
     if (width <= 920 && height <= 520) return 1.28;
-    return width <= 760 ? 1.42 : 1.22;
+    return width <= 760 ? 1.42 : 1.08;
   }
 
   function zoomProgress() {
@@ -1232,10 +1232,10 @@
     if (view === "landing") {
       return {
         offset: [
-          landscapePhone ? Math.round(width * 0.2) : width <= 760 ? Math.round(width * 0.12) : Math.round(width * 0.25),
-          width <= 760 && !landscapePhone ? Math.round(height * 0.25) : 0
+          landscapePhone ? Math.round(width * 0.2) : width <= 760 ? Math.round(width * 0.12) : Math.round(width * 0.32),
+          width <= 760 && !landscapePhone ? Math.round(height * 0.25) : Math.round(height * 0.12)
         ],
-        altitude: width <= 760 ? 2.15 : 1.62,
+        altitude: width <= 760 ? 2.15 : 1.34,
         lng: 24
       };
     }
@@ -1350,7 +1350,7 @@
     els.body.classList.toggle("is-landing", view === "landing");
     els.body.classList.toggle("is-explore", view === "explore");
     els.body.classList.toggle("is-transitioning", duration > 0);
-    document.title = view === "explore" ? "寻找工作｜OpenWork" : "OpenWork｜世界各地正在招什么";
+    document.title = view === "explore" ? "寻找工作｜OpenWork" : "OpenWork｜全球工作，尽在眼前";
 
     if (view === "landing") {
       closeResults();
